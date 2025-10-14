@@ -1,3 +1,5 @@
+```yaml
+
 # kube-s3-operator
 Based on linkedin course "Extending Kubernetes with Operator Patterns" by Frank P Moley
 
@@ -126,6 +128,6 @@ kube-s3-operator/
 ├── Makefile
 ├── PROJECT
 └── README.md
-
+```
 
 
