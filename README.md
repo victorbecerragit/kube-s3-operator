@@ -31,19 +31,34 @@ kubebuilder create api --group s3 --version v1alpha1 --kind S3Bucket --resource 
 
 This will create:
 
+Kubernetes kind object "S3Bucket"
+
 api/v1alpha1/s3bucket_types.go - Define your S3Bucket custom resource
 
 controllers/s3bucket_controller.go - Implement your reconciliation logic
 
 # Define Your Custom Resource (api/v1alpha1/s3bucket_types.go)
 
+sample: 
+type S3BucketSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
+
+	// Name is the name of the S3 bucket
+	Name string `json:"name,omitempty"` // omitempty is used to avoid issues with Terraform when the field is not set, but it is required for the API
+	
+	// Region is the AWS region where the bucket will be created
+	Region string `json:"region,omitempty"` // omitempty is used to avoid issues with Terraform when the field is not set, but it is required for the API
+
+	// Locked indicates if the bucket is locked for deletion
+	Locked bool `json:"locked,omitempty"` // omitempty is used to avoid issues with Terraform when the field is not set, but it is required for the API
+	
+}
+
 # Implement the controller logic (controllers/s3bucket_controller.go)
 
 
-# Generate deepcopy functions and CRD manifests
-make generate
-
-# Generate CRD, RBAC, and other manifests
+# Generate/regenerate code like CRD, RBAC, and other manifests like rbac for the group "s3.acme.io" (From --group "s3"  and --domain "acme.io")
 make manifests
 
 # Verify generated files
@@ -59,7 +74,8 @@ make install
 make run
 
 # Sample resource
-# Create a sample S3Bucket resource
+# Create a sample S3Bucket resource as from config/samples/s3_v1alpha1_s3bucket.yaml
+
 cat <<EOF | kubectl apply -f -
 apiVersion: s3.acme.io/v1alpha1
 kind: S3Bucket
