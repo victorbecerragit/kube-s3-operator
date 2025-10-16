@@ -1,0 +1,6 @@
+apiVersion: cninf.lil.frankmoley.com/v1alpha1
+kind: ObjStore
+metadata:
+  name: objstore-sample
+spec:
+  # TODO(user): Add fields here

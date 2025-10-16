@@ -119,7 +119,7 @@ kubectl logs -f -n kube-s3-operator-system deployment/kube-s3-operator-controlle
 # Check resource status
 kubectl get s3buckets -o wide
 
-# Project structure
+# Project structure for code/
 
 kube-s3-operator/
 ├── api/
@@ -144,6 +144,19 @@ kube-s3-operator/
 ├── Makefile
 ├── PROJECT
 └── README.md
+
+# Project structure for code-module/
+code-module/
+└── internal/
+    ├── controller/
+    │   └── s3bucket_controller.go         # Controller wiring only
+    ├── s3client/
+    │   └── s3-service.go                     # S3 API operations
+    ├── status/
+    │   └── updater.go                     # Status patching helpers
+    └── recorder/
+        └── event-recorder.go                       # Event-recording abstraction
+
 ```
 
 
