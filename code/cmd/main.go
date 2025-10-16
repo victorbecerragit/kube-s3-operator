@@ -22,6 +22,11 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/aws/aws-sdk-go/aws" // AWS SDK for Go
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session" // AWS SDK session package
+	"github.com/aws/aws-sdk-go/service/s3"  // S3 service client
+
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -66,7 +71,7 @@ func main() {
 	var tlsOpts []func(*tls.Config)
 	flag.StringVar(&metricsAddr, "metrics-bind-address", "0", "The address the metrics endpoint binds to. "+
 		"Use :8443 for HTTPS or :8080 for HTTP, or leave as 0 to disable the metrics service.")
-	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8082", "The address the probe endpoint binds to.") // default :8081, changed to :8082 to avoid conflict with metrics
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -202,9 +207,54 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := (&controller.S3BucketReconciler{
+	// Initialize AWS S3 client
+	// sess, err := session.NewSession(&aws.Config{
+	// 	Region: aws.String("us-west-2"), // Set your desired region
+	// })
+	// if err != nil {
+	// 	setupLog.Error(err, "unable to create AWS session")
+	// 	os.Exit(1)
+	// }
+	// s3Client := s3.New(sess)
+
+	// Setup the S3Bucket controller with the manager
+	// Pass the s3Client to the reconciler
+
+	// define AWS credentials and region from environment variables
+
+	id, ok := os.LookupEnv("AWS_ACCESS_KEY_ID")
+	if !ok {
+		setupLog.Error(err, "AWS_ACCESS_KEY_ID environment variable not set") // log the error and exit
+		os.Exit(1)                                                            // exit if the environment variable is not set, as we cannot proceed without it
+	}
+
+	secret, ok := os.LookupEnv("AWS_SECRET_ACCESS_KEY")
+	if !ok {
+		setupLog.Error(err, "AWS_SECRET_ACCESS_KEY environment variable not set") // log the error and exit
+		os.Exit(1)                                                                // exit if the environment variable is not set, as we cannot proceed without it
+	}
+
+	region, ok := os.LookupEnv("AWS_REGION")
+	if !ok {
+		setupLog.Error(err, "AWS_REGION environment variable not set, using default us-west-2")
+		region = "us-west-2" // default region
+	}
+
+	// Initialize AWS S3 client
+	sess, err := session.NewSession(&aws.Config{
+		Region:      aws.String(region),
+		Credentials: credentials.NewStaticCredentials(id, secret, ""), // no token for now
+	})
+	if err != nil {
+		setupLog.Error(err, "unable to create AWS session")
+		os.Exit(1)
+	}
+	s3Client := s3.New(sess)
+
+	if err = (&controller.S3BucketReconciler{ // pass the s3Client to the reconciler
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
+		S3svc:  s3Client,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "S3Bucket")
 		os.Exit(1)

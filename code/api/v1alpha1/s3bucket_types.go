@@ -20,6 +20,20 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Create constants for S3Bucket status conditions.
+const (
+	// PENDING_STATE indicates that the S3 bucket is pending creation.
+	PENDING_STATE = "PENDING"
+	// CREATED_STATE indicates that the S3 bucket was created.
+	CREATED_STATE = "CREATED"
+	// CREATING_STATE indicates that the S3 bucket is being created.
+	CREATING_STATE = "CREATING"
+	// DELETING_STATE indicates that the S3 bucket is being deleted.
+	DELETING_STATE = "DELETING"
+	// ERROR_STATE  indicates that the S3 bucket creation or deletion has failed.
+	ERROR_STATE = "ERROR"
+)
+
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
@@ -28,18 +42,26 @@ type S3BucketSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of S3Bucket. Edit s3bucket_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// Name is the name of the S3 bucket
+	Name string `json:"name,omitempty"` // omitempty is used to avoid issues with Terraform when the field is not set, but it is required for the API
+
+	// Region is the AWS region where the bucket will be created
+	Region string `json:"region,omitempty"` // omitempty is used to avoid issues with Terraform when the field is not set, but it is required for the API
+
+	// Locked indicates if the bucket is locked for deletion
+	Locked bool `json:"locked,omitempty"` // omitempty is used to avoid issues with Terraform when the field is not set, but it is required for the API
 }
 
 // S3BucketStatus defines the observed state of S3Bucket.
 type S3BucketStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	State string `json:"state,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Bucket Name",type="string",JSONPath=".spec.name",description="The name of the S3 bucket"
+// +kubebuilder:printcolumn:name="Region",type="string",JSONPath=".spec.region",description="The AWS region of the S3 bucket"
+// +kubebuilder:printcolumn:name="State",type=string,JSONPath=`.status.state`,description="The current state of the S3 bucket"
 
 // S3Bucket is the Schema for the s3buckets API.
 type S3Bucket struct {
