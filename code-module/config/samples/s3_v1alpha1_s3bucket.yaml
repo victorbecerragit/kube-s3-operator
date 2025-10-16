@@ -1,0 +1,13 @@
+apiVersion: s3.acme.io/v1alpha1
+kind: S3Bucket
+metadata:
+  labels:
+    app.kubernetes.io/name: code
+    app.kubernetes.io/managed-by: kustomize
+  name: my-bucket-test-acme
+  namespace: s3-acme
+spec:
+  name: my-bucket-test-acme-2025
+  region: us-west-2
+  locked: false
+  #accessControl: private

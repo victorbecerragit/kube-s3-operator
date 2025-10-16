@@ -1,8 +1,0 @@
-apiVersion: cninf.lil.frankmoley.com/v1alpha1
-kind: ObjStore
-metadata:
-  name: fpmlil-01
-spec:
-  name: fpmlillive-extk8s-01
-  locked: false
-

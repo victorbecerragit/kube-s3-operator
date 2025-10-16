@@ -1,6 +1,0 @@
-domain: lil.frankmoley.com
-layout:
-- go.kubebuilder.io/v3
-projectName: cninf
-repo: github.com/fpmoles/extending-kubernetes/cninf
-version: "3"

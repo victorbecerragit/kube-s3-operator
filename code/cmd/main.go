@@ -207,19 +207,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Initialize AWS S3 client
-	// sess, err := session.NewSession(&aws.Config{
-	// 	Region: aws.String("us-west-2"), // Set your desired region
-	// })
-	// if err != nil {
-	// 	setupLog.Error(err, "unable to create AWS session")
-	// 	os.Exit(1)
-	// }
-	// s3Client := s3.New(sess)
-
 	// Setup the S3Bucket controller with the manager
-	// Pass the s3Client to the reconciler
-
 	// define AWS credentials and region from environment variables
 
 	id, ok := os.LookupEnv("AWS_ACCESS_KEY_ID")
@@ -251,7 +239,8 @@ func main() {
 	}
 	s3Client := s3.New(sess)
 
-	if err = (&controller.S3BucketReconciler{ // pass the s3Client to the reconciler
+	// Pass the s3Client to the reconciler
+	if err = (&controller.S3BucketReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 		S3svc:  s3Client,
