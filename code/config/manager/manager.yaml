@@ -21,7 +21,7 @@ spec:
     matchLabels:
       control-plane: controller-manager
       app.kubernetes.io/name: code
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       annotations:
@@ -64,8 +64,20 @@ spec:
           - --leader-elect
           - --health-probe-bind-address=:8081
         image: controller:latest
+        imagePullPolicy: IfNotPresent
         name: manager
         ports: []
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-secret
+              key: aws-access-key-id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-secret
+              key: aws-secret-access-key
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
