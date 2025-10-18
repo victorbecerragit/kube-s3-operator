@@ -81,11 +81,14 @@ func (r *S3BucketReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		log.Info("S3Bucket is being deleted", "BucketName", s3bkt.Spec.Name)
 
 		if controllerutil.ContainsFinalizer(s3bkt, s3BucketFinalizer) {
-			// Run cleanup logic
+			// Our finalizer is present, so handle deletion
 			if err := r.DeleteResource(ctx, s3bkt); err != nil {
 				log.Error(err, "Failed to delete S3 bucket resources")
 				return ctrl.Result{}, err
 			}
+			// Remove finalizer after successful deletion
+			controllerutil.RemoveFinalizer(s3bkt, s3BucketFinalizer)
+			_ = r.Update(ctx, s3bkt)
 			// DeleteResource handles finalizer removal internally
 		}
 

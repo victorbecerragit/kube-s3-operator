@@ -104,8 +104,10 @@ build: manifests generate fmt vet ## Build manager binary.
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
-	source ./env.list && go run ./cmd/main.go   // use AWS variables defined in env.list
+#	source ./env.list && go run ./cmd/main.go   // use AWS variables defined in env.list
 
+	go run ./cmd/main.go   // use AWS variables defined in aws-secret
+	
 # If you wish to build the manager image targeting other platforms you can use the --platform flag.
 # (i.e. docker build --platform linux/arm64). However, you must enable docker buildKit for it.
 # More info: https://docs.docker.com/develop/develop-images/build_enhancements/
