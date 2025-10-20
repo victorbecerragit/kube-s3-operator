@@ -1,0 +1,40 @@
+# Default values for kube-s3-operator
+replicaCount: 1
+
+image:
+  repository: ghcr.io/victorbecerragit/kube-s3-operator
+  pullPolicy: IfNotPresent
+  tag: "v0.1.0"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# AWS Configuration
+aws:
+  region: us-east-1
+  # Credentials can be provided via:
+  # 1. IAM roles for service accounts (recommended)
+  # 2. Secret with AWS credentials
+  credentialsSecretName: ""
