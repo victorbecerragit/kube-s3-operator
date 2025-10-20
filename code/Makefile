@@ -252,6 +252,11 @@ helm: manifests kustomize helmify
 	$(KUSTOMIZE) build config/default | $(HELMIFY) charts/$(CHART_NAME)
 	@echo "Helm chart generated in charts/$(CHART_NAME)"
 
+.PHONY: s3-installer
+s3-installer: manifests kustomize helmify
+	$(KUSTOMIZE) build config/default -o ./config/default/install.yaml # Generate consolidated manifests usefull for manual installation and for helm chart generation 
+	@echo "Generated consolidated manifests at ./config/default/install.yaml"
+
 #.PHONY: generate-helm-chart
 #generate-helm-chart: helmify ## Generate Helm chart from existing Kubernetes manifests.
 #	$(HELMIFY) ./config/manager --chart-version 0.1.0 --app-version 0.1.0 --output ./charts/manager-chart

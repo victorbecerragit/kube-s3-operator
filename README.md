@@ -30,13 +30,11 @@ helm repo add kube-s3-operator https://victorbecerragit.github.io/kube-s3-operat
 
 helm install kube-s3-operator kube-s3-operator/kube-s3-operator
 
+helm upgrade --install s3-operator --namespace s3-acme code/charts/kube-s3-operator/ --values charts/kube-s3-operator/default-values.yaml --dry-run
 
 #### Using kubectl
 
-
-kubectl apply -f https://github.com/victorbecerragit/kube-s3-operator/releases/latest/download/install.yaml
-
-
+kubectl apply -f https://github.com/victorbecerragit/kube-s3-operator/code/config/default/install.yaml
 
 ### Usage
 
