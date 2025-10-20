@@ -42,7 +42,7 @@ kubectl apply -f https://github.com/victorbecerragit/kube-s3-operator/releases/l
 
 Create an S3 bucket:
 
-
+```yaml
 apiVersion: s3.acme.io/v1alpha1
 kind: S3Bucket
 metadata:
@@ -51,7 +51,7 @@ spec:
 bucketName: my-unique-bucket-name-12345
 region: us-west-2
 locked: false
-
+```
 
 ## Documentation
 
