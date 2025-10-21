@@ -4,8 +4,6 @@ metadata:
   name: s3buckets.s3.acme.io
   annotations:
     controller-gen.kubebuilder.io/version: v0.18.0
-  labels:
-  {{- include "kube-s3-operator.labels" . | nindent 4 }}
 spec:
   group: s3.acme.io
   names:
