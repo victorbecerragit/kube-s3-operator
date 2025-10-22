@@ -38,7 +38,7 @@ kubectl apply -f https://github.com/victorbecerragit/kube-s3-operator/code/confi
 
 ### Usage
 
-Create an S3 bucket:
+Create an sample S3 bucket:
 
 ```yaml
 apiVersion: s3.acme.io/v1alpha1
@@ -51,7 +51,20 @@ region: us-west-2
 locked: false
 ```
 
-## Documentation
+Create a aws secrets:
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aws-secret
+type: Opaque
+data:
+  # Replace the following base64 encoded strings with your actual AWS credentials
+  aws-access-key-id: xxxxxxxxxx
+  aws-secret-access-key: xxxxxxxxxxx==
+```
+
+## Documentation - TODO
 
 - [Installation Guide](docs/installation.md)
 - [User Guide](docs/user-guide.md)
