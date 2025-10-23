@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "kube-s3-operator.fullname" . }}-s3bucket-admin-role
+  name: {{ include "kube-s3-operator.clustername" . }}-s3bucket-admin-role
   labels:
   {{- include "kube-s3-operator.labels" . | nindent 4 }}
 rules:

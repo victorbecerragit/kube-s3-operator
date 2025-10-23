@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "kube-s3-operator.fullname" . }}-manager-role
+  name: {{ include "kube-s3-operator.clustername" . }}-manager-role
   labels:
   {{- include "kube-s3-operator.labels" . | nindent 4 }}
 rules:
@@ -47,7 +47,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "kube-s3-operator.fullname" . }}-manager-rolebinding
+  name: {{ include "kube-s3-operator.clustername" . }}-manager-rolebinding
   labels:
   {{- include "kube-s3-operator.labels" . | nindent 4 }}
 roleRef:
