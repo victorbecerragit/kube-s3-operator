@@ -24,6 +24,23 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{/*
+Create a fully qualified name for cluster-scoped resources (includes namespace).
+This ensures ClusterRoles and ClusterRoleBindings are unique across namespaces.
+*/}}
+{{- define "kube-s3-operator.clustername" -}}
+{{- if .Values.fullnameOverride }}
+{{- printf "%s-%s" .Release.Namespace .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- printf "%s-%s" .Release.Namespace .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s-%s" .Release.Namespace .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "kube-s3-operator.chart" -}}
