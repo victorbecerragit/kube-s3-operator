@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "kube-s3-operator.clustername" . }}-metrics-auth-role
+  name: {{ include "clusterRoleName" .  }}-metrics-auth-role
   labels:
   {{- include "kube-s3-operator.labels" . | nindent 4 }}
 rules:
