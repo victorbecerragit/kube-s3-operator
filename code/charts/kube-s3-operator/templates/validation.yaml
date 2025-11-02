@@ -1,0 +1,4 @@
+{{- if eq .Release.Name "s3-operator" }}
+{{- fail "Release name 's3-operator' is forbidden. Please use a different release name to avoid conflicts." }}
+{{- end }}
+
