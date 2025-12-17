@@ -1,0 +1,10 @@
+repos:
+- repo: https://github.com/golangci/golangci-lint
+  rev: v2.7.2
+  hooks:
+  - id: golangci-lint
+    name: golangci-lint in ./code (verbose)
+    language: system          # use installed golangci-lint
+    entry: bash -c 'cd code && ../golangci-lint run -v'
+    pass_filenames: false     # let golangci-lint discover files via ./...
+
