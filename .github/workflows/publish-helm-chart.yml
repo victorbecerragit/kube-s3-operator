@@ -179,19 +179,23 @@ jobs:
         git clean -fd
         git checkout -- .
         
-        # Fetch gh-pages branch if it exists
+        # Fetch and checkout gh-pages branch
+        echo "Fetching gh-pages branch from remote"
+        git fetch origin gh-pages --depth=1 2>/dev/null || echo "gh-pages branch may not exist yet"
+        
         if git rev-parse --verify origin/gh-pages &>/dev/null; then
-          echo "gh-pages branch exists - checking out existing branch"
-          git fetch origin gh-pages:gh-pages
-          git checkout gh-pages
+          echo "gh-pages branch exists - checking out and updating to latest"
+          git checkout gh-pages || git checkout -b gh-pages origin/gh-pages
+          git reset --hard origin/gh-pages
         else
           echo "gh-pages branch does not exist - creating new orphan branch"
           git checkout --orphan gh-pages
+          git rm -rf . 2>/dev/null || true
         fi
         
         # Remove old publish workflow files but keep chart versions
         echo "Preparing gh-pages branch for update"
-        git rm -rf . 2>/dev/null || rm -rf * .github .gitignore .dockerignore
+        git rm -rf . 2>/dev/null || rm -rf * .github .gitignore .dockerignore || true
         
         # Copy new chart files
         echo "Copying chart artifacts to gh-pages branch"
@@ -207,9 +211,9 @@ jobs:
           -m "- App Version: ${{ needs.validate.outputs.app-version }}" \
           -m "- Git Tag: ${{ github.ref_name }}" || echo "No changes to commit"
         
-        # Push to gh-pages
+        # Push to gh-pages with force-with-lease for safety
         echo "Pushing to gh-pages branch"
-        git push origin gh-pages
+        git push origin gh-pages --force-with-lease
         echo "✅ Helm chart published to https://victorbecerragit.github.io/kube-s3-operator"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
