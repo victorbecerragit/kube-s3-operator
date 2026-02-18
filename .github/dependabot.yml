@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: "gomod"
+    directory: "/code"
+    schedule:
+      interval: "weekly"
+    target-branch: "main"
+    open-pull-requests-limit: 5
+    rebase-strategy: "auto"
+    assignees:
+      - "victorbecerragit"
+    allow:
+      - dependency-type: "direct"
+    groups:
+      k8s-libs:
+        patterns: ["k8s.io/*", "sigs.k8s.io/*"]
+      aws-s3:
+        patterns: ["github.com/aws/aws-sdk-go*"]
