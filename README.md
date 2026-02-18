@@ -1,6 +1,6 @@
 # kube-s3-operator
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/victorbecerragit/kube-s3-operator)](https://goreportcard.com/report/github.com/victorbecerragit/kube-s3-operator)
+[![Go Report Card](https://goreportcard.com/badge/github.com/victorbecerragit/kube-s3-operator/code)](https://goreportcard.com/report/github.com/victorbecerragit/kube-s3-operator/code)
 [![Go Version](https://img.shields.io/badge/go%20version-1.25.0-blue)](https://golang.org/dl/)
 [![Kubernetes](https://img.shields.io/badge/kubernetes-v0.35.1-blue)](https://kubernetes.io/)
 [![AWS SDK](https://img.shields.io/badge/aws--sdk-v2-orange)](https://github.com/aws/aws-sdk-go-v2)
