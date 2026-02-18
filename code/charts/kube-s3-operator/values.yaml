@@ -27,6 +27,17 @@ controllerManager:
   replicas: 2
   serviceAccount:
     annotations: {}
+# AWS Configuration
+# Set awsCredentials.enabled to true to use AWS credentials from a secret
+# The secret must exist in the same namespace before deployment
+awsCredentials:
+  enabled: false
+  # Secret name containing AWS credentials
+  secretName: aws-secret
+  # Secret keys for AWS credentials
+  accessKeyIdKey: aws-access-key-id
+  secretAccessKeyKey: aws-secret-access-key
+
 kubernetesClusterDomain: cluster.local
 metricsService:
   ports:
