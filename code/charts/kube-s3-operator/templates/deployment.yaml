@@ -26,16 +26,20 @@ spec:
         command:
         - /manager
         env:
+        {{- if .Values.awsCredentials.enabled }}
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
-              key: aws-access-key-id
-              name: aws-secret
+              key: {{ .Values.awsCredentials.accessKeyIdKey }}
+              name: {{ .Values.awsCredentials.secretName }}
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
-              key: aws-secret-access-key
-              name: aws-secret
+              key: {{ .Values.awsCredentials.secretAccessKeyKey }}
+              name: {{ .Values.awsCredentials.secretName }}
+        {{- else }}
+        # AWS credentials not configured - requires IAM role or external credentials provider
+        {{- end }}
         - name: KUBERNETES_CLUSTER_DOMAIN
           value: {{ quote .Values.kubernetesClusterDomain }}
         image: {{ .Values.controllerManager.manager.image.repository }}:{{ .Values.controllerManager.manager.image.tag

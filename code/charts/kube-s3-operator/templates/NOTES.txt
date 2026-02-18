@@ -8,3 +8,78 @@ Please choose another release name when installing this chart, for example:
 
 Thank you for installing {{ .Chart.Name }}!
 
+=== AWS Credentials Configuration ===
+{{- if .Values.awsCredentials.enabled }}
+
+✅ AWS credentials are ENABLED
+
+The controller will attempt to use the Kubernetes secret '{{ .Values.awsCredentials.secretName }}'
+in the '{{ .Release.Namespace }}' namespace.
+
+⚠️ IMPORTANT: Make sure the secret exists BEFORE the controller starts, otherwise the pods will fail!
+
+Create the secret with your AWS credentials:
+
+  kubectl create secret generic {{ .Values.awsCredentials.secretName }} \
+    --from-literal={{ .Values.awsCredentials.accessKeyIdKey }}=YOUR_AWS_ACCESS_KEY_ID \
+    --from-literal={{ .Values.awsCredentials.secretAccessKeyKey }}=YOUR_AWS_SECRET_ACCESS_KEY \
+    -n {{ .Release.Namespace }}
+
+Or create it from AWS credentials file:
+
+  kubectl create secret generic {{ .Values.awsCredentials.secretName }} \
+    --from-file={{ .Values.awsCredentials.accessKeyIdKey }}=$HOME/.aws/credentials \
+    --from-file={{ .Values.awsCredentials.secretAccessKeyKey }}=$HOME/.aws/credentials \
+    -n {{ .Release.Namespace }}
+
+Restart the pods after creating the secret:
+
+  kubectl rollout restart deployment -n {{ .Release.Namespace }}
+
+{{- else }}
+
+❌ AWS credentials are DISABLED (using credential chain)
+
+The controller will use the default AWS credential chain:
+  • IAM role (if on EKS)
+  • AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables
+  • ~/.aws/credentials file
+  • Instance metadata service (EC2)
+
+To enable credentials from a Kubernetes secret, upgrade with:
+
+  helm upgrade {{ .Release.Name }} kube-s3-operator/kube-s3-operator \
+    -n {{ .Release.Namespace }} \
+    --set awsCredentials.enabled=true
+
+{{- end }}
+
+=== Verify Installation ===
+
+1. Check if pods are running:
+   kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name=kube-s3-operator
+
+2. Check controller logs:
+   kubectl logs -n {{ .Release.Namespace }} -l app.kubernetes.io/name=kube-s3-operator -c manager --tail=50
+
+3. Verify no errors in pod events:
+   kubectl describe pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name=kube-s3-operator
+
+=== Next Steps ===
+
+Create an S3Bucket resource:
+
+  cat << EOF | kubectl apply -f -
+  apiVersion: s3.acme.io/v1alpha1
+  kind: S3Bucket
+  metadata:
+    name: my-test-bucket
+    namespace: {{ .Release.Namespace }}
+  spec:
+    bucketName: my-unique-bucket-name-$(date +%s)
+    region: us-west-2
+    locked: false
+  EOF
+
+Monitor the resource creation:
+  kubectl get s3bucket -n {{ .Release.Namespace }} -w
