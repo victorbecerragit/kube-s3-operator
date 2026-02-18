@@ -98,6 +98,97 @@ data:
 | Ginkgo    | v2.28.1 | ✅ Latest |
 | Gomega    | v1.39.0 | ✅ Latest |
 
+## 🚀 Automated Release Pipeline
+
+This project uses GitHub Actions to automate Helm chart publication and validation.
+
+### Release Workflow
+
+When you push a **version tag** (e.g., `v0.2.0`), the automated pipeline:
+
+1. **Validates** the Helm chart
+   - Runs `helm lint` for syntax checks
+   - Renders templates and validates structure
+   - Validates all Kubernetes manifests
+
+2. **Requests Approval**
+   - Creates a GitHub issue with release details
+   - Provides approval/cancel options via comments
+   - Allows code review before publication
+
+3. **Publishes** to Helm Repository
+   - Packages the Helm chart
+   - Generates/updates `index.yaml`
+   - Preserves all previous versions
+   - Publishes to [gh-pages branch](https://github.com/victorbecerragit/kube-s3-operator/tree/gh-pages)
+
+4. **Creates Release Notes**
+   - Auto-generates GitHub release
+   - Includes version information
+   - Links to chart documentation
+
+### How to Release a New Version
+
+```bash
+# 1. Update chart version in code/charts/kube-s3-operator/Chart.yaml
+# 2. Update appVersion if needed
+# 3. Commit changes
+git add code/charts/kube-s3-operator/Chart.yaml
+git commit -m "chore: bump chart version to X.Y.Z"
+git push origin main
+
+# 4. Create and push a version tag
+git tag -a vX.Y.Z -m "Release vX.Y.Z - description of changes"
+git push origin vX.Y.Z
+
+# 5. GitHub Actions automatically:
+#    - Validates the chart
+#    - Creates approval issue
+#    - Publishes to Helm repository
+#    - Generates release notes
+```
+
+### Helm Repository Configuration
+
+The project maintains a public Helm repository at:
+```
+https://victorbecerragit.github.io/kube-s3-operator
+```
+
+**Add the repository:**
+```bash
+helm repo add kube-s3-operator https://victorbecerragit.github.io/kube-s3-operator
+helm repo update
+```
+
+**View available versions:**
+```bash
+helm search repo kube-s3-operator -A
+```
+
+**Install a specific version:**
+```bash
+# Latest version
+helm install my-operator kube-s3-operator/kube-s3-operator
+
+# Specific version
+helm install my-operator kube-s3-operator/kube-s3-operator --version 0.2.0
+
+# Previous version (rollback)
+helm install my-operator kube-s3-operator/kube-s3-operator --version 0.1.1
+```
+
+### Workflow Configuration
+
+Helm chart publication is configured in [`.github/workflows/publish-helm-chart.yml`](.github/workflows/publish-helm-chart.yml).
+
+Key features:
+- ✅ Automatic validation on version tags
+- ✅ Version history preservation (no data loss)
+- ✅ Approval mechanism for production safety
+- ✅ Intelligent index merging for multi-version support
+- ✅ Comprehensive release documentation
+
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.md) for details.
