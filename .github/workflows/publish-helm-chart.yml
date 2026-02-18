@@ -140,10 +140,27 @@ jobs:
     - name: Update Helm repo index
       run: |
         echo "📝 Updating Helm repository index"
-        helm repo index .deploy \
-          --url https://victorbecerragit.github.io/kube-s3-operator \
-          --merge .deploy/index.yaml || true
-        echo "✅ Repository index updated"
+        
+        # Fetch existing index.yaml from gh-pages to merge with new version
+        if git rev-parse --verify origin/gh-pages &>/dev/null; then
+          echo "Fetching existing index.yaml to merge releases"
+          git show origin/gh-pages:index.yaml > .deploy/index-old.yaml 2>/dev/null || true
+        fi
+        
+        # Generate new index, merging with existing if available
+        if [ -f .deploy/index-old.yaml ]; then
+          helm repo index .deploy \
+            --url https://victorbecerragit.github.io/kube-s3-operator \
+            --merge .deploy/index-old.yaml
+          echo "✅ Index merged with ${{ needs.validate.outputs.chart-version }}"
+        else
+          helm repo index .deploy \
+            --url https://victorbecerragit.github.io/kube-s3-operator
+          echo "✅ Repository index created (first release)"
+        fi
+        
+        # Clean up
+        rm -f .deploy/index-old.yaml
         ls -la .deploy/
 
     - name: Deploy to gh-pages
@@ -158,13 +175,24 @@ jobs:
         # Checkout or create gh-pages branch
         git checkout gh-pages || git checkout --orphan gh-pages
         
-        # Remove all tracked files to start fresh for this branch
-        git rm -rf . || true
+        # Preserve existing chart files, remove old artifacts directory but keep charts
+        # This ensures we keep previous versions
+        if git rev-parse --verify origin/gh-pages &>/dev/null; then
+          echo "Preserving existing chart files from previous releases"
+          # Only remove .deploy directory, preserve all other files (previous chart versions)
+          rm -rf .deploy code || true
+        else
+          echo "Initial deployment - removing all files"
+          git rm -rf . || true
+        fi
         
-        # Copy chart files to root
+        # Copy new chart files
         cp -r .deploy/* .
         
-        # Add and commit
+        # Remove .deploy directory (we only need files in root)
+        rm -rf .deploy
+        
+        # Add all files
         git add .
         git commit -m "Publish Helm chart v${{ needs.validate.outputs.chart-version }}" \
           -m "- Chart Version: ${{ needs.validate.outputs.chart-version }}" \
