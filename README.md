@@ -1,6 +1,9 @@
 # kube-s3-operator
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/victorbecerragit/kube-s3-operator)](https://goreportcard.com/report/github.com/victorbecerragit/kube-s3-operator)
+[![Go Version](https://img.shields.io/badge/go%20version-1.25.0-blue)](https://golang.org/dl/)
+[![Kubernetes](https://img.shields.io/badge/kubernetes-v0.35.1-blue)](https://kubernetes.io/)
+[![AWS SDK](https://img.shields.io/badge/aws--sdk-v2-orange)](https://github.com/aws/aws-sdk-go-v2)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Release](https://img.shields.io/github/release/victorbecerragit/kube-s3-operator.svg)](https://github.com/victorbecerragit/kube-s3-operator/releases)
 
@@ -13,12 +16,16 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 - 🌍 Multi-region bucket creation
 - ♻️ Automatic reconciliation and drift detection
 - 🎯 Native Kubernetes integration with kubectl
+- 🚀 AWS SDK v2 for enhanced security and performance
+- ✅ Go 1.25.0 with latest Kubernetes v0.35.1 compatibility
+- 📝 Comprehensive testing with Ginkgo v2.28.1 and Gomega v1.39.0
 
 ## Quick Start
 
 ### Prerequisites
 
-- Kubernetes cluster (v1.24+)
+- Kubernetes cluster (v1.28+, tested with v0.35.1)
+- Go 1.25.0 or later
 - AWS credentials configured
 - kubectl installed
 
@@ -70,6 +77,26 @@ data:
 - [User Guide](docs/user-guide.md)
 - [API Reference](docs/api-reference.md)
 - [Development Guide](docs/development.md)
+
+## Recent Updates
+
+### Latest Release (v2.0.0)
+- **AWS SDK Migration**: Upgraded from AWS SDK v1 (EOL: July 31, 2025) to AWS SDK v2
+- **Go Update**: Bumped to Go 1.25.0 for latest performance and security improvements
+- **Kubernetes Libraries**: Updated to v0.35.1 (k8s.io/api, k8s.io/apimachinery, k8s.io/client-go)
+- **Controller Runtime**: Updated to v0.23.1 for better stability
+- **Testing Framework**: Ginkgo v2.28.1 and Gomega v1.39.0
+
+### Version Compatibility Matrix
+
+| Component | Version | Status |
+|-----------|---------|--------|
+| Go        | 1.25.0  | ✅ Latest |
+| Kubernetes| v0.35.1 | ✅ Latest |
+| AWS SDK   | v2      | ✅ Current |
+| Controller Runtime | v0.23.1 | ✅ Compatible |
+| Ginkgo    | v2.28.1 | ✅ Latest |
+| Gomega    | v1.39.0 | ✅ Latest |
 
 ## Contributing
 
