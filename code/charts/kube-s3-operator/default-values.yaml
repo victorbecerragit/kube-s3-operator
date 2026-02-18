@@ -1,3 +1,15 @@
+# Default Helm Chart Values for kube-s3-operator
+# Version: 0.2.0
+# 
+# Key Updates:
+# - AWS SDK v2 migration (replaced deprecated v1)
+# - Go 1.25.0 runtime
+# - Kubernetes v0.35.1 compatibility
+# - Controller Runtime v0.23.1
+# - Ginkgo v2.28.1 & Gomega v1.39.0 for testing
+#
+# See values.yaml for customization options
+
 controllerManager:
   manager:
     args:
