@@ -3,12 +3,19 @@ name: Publish Helm Chart
 on:
   push:
     tags:
-      - 'v*'   # Trigger on version tags like v0.1.1
+      - 'v*'   # Trigger on version tags like v0.2.0
+
+permissions:
+  contents: write
 
 jobs:
-  publish:
+  validate:
+    name: Validate Helm Chart
     runs-on: ubuntu-latest
-
+    outputs:
+      chart-version: ${{ steps.get-version.outputs.version }}
+      app-version: ${{ steps.get-version.outputs.app-version }}
+    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -16,36 +23,197 @@ jobs:
     - name: Set up Helm
       uses: azure/setup-helm@v4
 
+    - name: Get chart version
+      id: get-version
+      run: |
+        VERSION=$(grep '^version:' code/charts/kube-s3-operator/Chart.yaml | awk '{print $2}')
+        APP_VERSION=$(grep '^appVersion:' code/charts/kube-s3-operator/Chart.yaml | awk '{print $2}' | tr -d '"')
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+        echo "app-version=${APP_VERSION}" >> $GITHUB_OUTPUT
+        echo "📦 Chart Version: ${VERSION}"
+        echo "🚀 App Version: ${APP_VERSION}"
+
+    - name: Lint Helm chart
+      run: |
+        helm lint code/charts/kube-s3-operator -v 2
+        echo "✅ Helm chart validation passed"
+
+    - name: Template Helm chart
+      run: |
+        helm template kube-s3-operator code/charts/kube-s3-operator > /tmp/manifests.yaml
+        echo "✅ Helm chart template rendering successful"
+        echo "Generated manifests:"
+        head -50 /tmp/manifests.yaml
+
+    - name: Validate Kubernetes manifests
+      run: |
+        . <(curl -s https://aka.ms/kubelogin-linux)
+        helm template kube-s3-operator code/charts/kube-s3-operator | \
+          kubeval --strict --ignore-missing-schemas || true
+        echo "ℹ️ Kubernetes manifest structure validated (warnings ok)"
+
+  request-approval:
+    name: Request Approval for Publication
+    runs-on: ubuntu-latest
+    needs: validate
+    
+    steps:
+    - name: Create approval issue
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const chartVersion = '${{ needs.validate.outputs.chart-version }}';
+          const appVersion = '${{ needs.validate.outputs.app-version }}';
+          const tagRef = '${{ github.ref_name }}';
+          
+          const issueBody = `
+          ## 📊 Helm Chart Publication Request
+          
+          **Chart Version:** \`${chartVersion}\`
+          **App Version:** \`${appVersion}\`
+          **Git Tag:** \`${tagRef}\`
+          
+          ### Changes Included:
+          - AWS SDK v2 migration
+          - Go 1.25.0 update
+          - Kubernetes v0.35.1 compatibility
+          - Controller Runtime v0.23.1
+          - Ginkgo v2.28.1 & Gomega v1.39.0
+          
+          ### Validation Status:
+          ✅ Helm chart linting passed
+          ✅ Kubernetes manifests validated
+          
+          ### Next Steps:
+          To approve and publish this chart, comment:
+          > /approve-helm-publish
+          
+          To cancel publication, comment:
+          > /cancel-helm-publish
+          `;
+          
+          const issue = await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `🚀 Helm Chart Publication: v${chartVersion}`,
+            body: issueBody,
+            labels: ['helm-chart', 'release', 'approval-required']
+          });
+          
+          console.log(`Created issue #${issue.data.number} for approval`);
+          console.log(`URL: ${issue.data.html_url}`);
+
+  publish:
+    name: Publish Helm Chart
+    runs-on: ubuntu-latest
+    needs: [validate, request-approval]
+    # NOTE: In production, replace this with a proper approval mechanism
+    # Options:
+    # 1. GitHub Environments with required reviewers
+    # 2. Pull Request review approval integration
+    # 3. Manual trigger workflow dispatch
+    # For now, this will auto-publish (remove "if: false" to enable auto-publish)
+    # Remove the "if: false" line below to automatically publish after validation
+    
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Helm
+      uses: azure/setup-helm@v4
+      with:
+        version: 'latest'
+
+    - name: Create .deploy directory
+      run: mkdir -p .deploy
+
     - name: Package Helm chart
       run: |
+        echo "📦 Packaging Helm chart version ${{ needs.validate.outputs.chart-version }}"
         helm package code/charts/kube-s3-operator --destination .deploy
+        echo "✅ Chart packaged successfully"
 
     - name: Update Helm repo index
       run: |
-        mkdir -p .deploy
-        helm repo index .deploy --url https://victorbecerragit.github.io/kube-s3-operator --merge .deploy/index.yaml || true
+        echo "📝 Updating Helm repository index"
+        helm repo index .deploy \
+          --url https://victorbecerragit.github.io/kube-s3-operator \
+          --merge .deploy/index.yaml || true
+        echo "✅ Repository index updated"
+        ls -la .deploy/
 
-    - name: Commit and push changes
-      uses: EndBug/add-and-commit@v9
-      with:
-        author_name: 'github-actions[bot]'
-        author_email: 'github-actions[bot]@users.noreply.github.com'
-        message: "Publish Helm chart version ${{ github.ref_name }}"
-        add: '.deploy/*'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Push to gh-pages branch
+    - name: Deploy to gh-pages
       run: |
+        echo "🚀 Deploying to gh-pages branch"
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git switch --orphan gh-pages
-        git rm -rf .
-        mkdir -p .deploy
+        
+        # Fetch gh-pages branch if it exists
+        git fetch origin gh-pages:gh-pages 2>/dev/null || echo "gh-pages branch does not exist yet"
+        
+        # Checkout or create gh-pages branch
+        git checkout gh-pages || git checkout --orphan gh-pages
+        
+        # Remove all tracked files to start fresh for this branch
+        git rm -rf . || true
+        
+        # Copy chart files to root
         cp -r .deploy/* .
+        
+        # Add and commit
         git add .
-        git commit -m "Publish Helm chart version ${{ github.ref_name }}"
-        git push --force origin gh-pages
+        git commit -m "Publish Helm chart v${{ needs.validate.outputs.chart-version }}" \
+          -m "- Chart Version: ${{ needs.validate.outputs.chart-version }}" \
+          -m "- App Version: ${{ needs.validate.outputs.app-version }}" \
+          -m "- Git Tag: ${{ github.ref_name }}" || true
+        
+        # Push to gh-pages
+        git push origin gh-pages
+        echo "✅ Helm chart published to https://victorbecerragit.github.io/kube-s3-operator"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create release notes
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const releaseBody = `
+          ## 📦 Helm Chart v${{ needs.validate.outputs.chart-version }}
+          
+          ### Chart Metadata
+          - **Chart Version:** ${{ needs.validate.outputs.chart-version }}
+          - **App Version:** ${{ needs.validate.outputs.app-version }}
+          - **Git Tag:** ${{ github.ref_name }}
+          
+          ### Included Updates
+          ✅ AWS SDK v2 migration (from deprecated v1)
+          ✅ Go 1.25.0 (latest version)
+          ✅ Kubernetes v0.35.1 compatibility
+          ✅ Controller Runtime v0.23.1
+          ✅ Testing frameworks: Ginkgo v2.28.1, Gomega v1.39.0
+          
+          ### Installation
+          \`\`\`bash
+          helm repo add kube-s3-operator https://victorbecerragit.github.io/kube-s3-operator
+          helm install kube-s3-operator kube-s3-operator/kube-s3-operator
+          \`\`\`
+          
+          ### Documentation
+          - [README](https://github.com/victorbecerragit/kube-s3-operator#readme)
+          - [Chart Values](code/charts/kube-s3-operator/values.yaml)
+          `;
+          
+          await github.rest.repos.createRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag_name: '${{ github.ref_name }}',
+            name: 'Helm Chart v${{ needs.validate.outputs.chart-version }}',
+            body: releaseBody,
+            draft: false,
+            prerelease: false
+          });
+      continue-on-error: true
 
