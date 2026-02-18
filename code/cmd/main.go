@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -216,36 +217,56 @@ func main() {
 	}
 
 	// Setup the S3Bucket controller with the manager
-	// define AWS credentials and region from environment variables
+	// AWS credentials are optional - when not provided, the default credential chain is used
+	// (IAM roles, environment variables, ~/.aws/credentials, instance metadata service)
 
-	id, ok := os.LookupEnv("AWS_ACCESS_KEY_ID")
-	if !ok {
-		setupLog.Error(nil, "AWS_ACCESS_KEY_ID environment variable not set")
-		// Exit if env var not set, cannot proceed without it
-		os.Exit(1)
-	}
+	setupLog.Info("Initializing AWS S3 client")
 
-	secret, ok := os.LookupEnv("AWS_SECRET_ACCESS_KEY")
-	if !ok {
-		setupLog.Error(nil, "AWS_SECRET_ACCESS_KEY environment variable not set")
-		// Exit if env var not set, cannot proceed without it
-		os.Exit(1)
+	// Check for explicit AWS credentials
+	id, idOk := os.LookupEnv("AWS_ACCESS_KEY_ID")
+	secret, secretOk := os.LookupEnv("AWS_SECRET_ACCESS_KEY")
+
+	// If credentials are provided, use them; otherwise the default credential chain will be used
+	if idOk && secretOk {
+		setupLog.Info(
+			"AWS credentials provided via environment variables",
+		)
+	} else if idOk || secretOk {
+		setupLog.V(1).Info("AWS credentials incomplete",
+			"hasAccessKey", idOk, "hasSecretKey", secretOk)
+		setupLog.Info("Will attempt to use default credential chain")
+	} else {
+		setupLog.Info("AWS credentials not provided, using default credential chain")
 	}
 
 	region, ok := os.LookupEnv("AWS_REGION")
 	if !ok {
-		setupLog.Error(nil, "AWS_REGION environment variable not set, using default us-west-2")
+		setupLog.Info("AWS_REGION environment variable not set, using default us-west-2")
 		region = "us-west-2" // default region
 	}
 
 	// Initialize AWS S3 client using AWS SDK v2
 	ctx := context.Background()
-	cfg, err := config.LoadDefaultConfig(ctx,
-		config.WithRegion(region),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(id, secret, "")),
-	)
-	if err != nil {
-		setupLog.Error(err, "unable to load AWS configuration")
+	var cfg aws.Config
+	var cerr error
+
+	// Use provided credentials if available, otherwise rely on default credential chain
+	if idOk && secretOk {
+		cfg, cerr = config.LoadDefaultConfig(ctx,
+			config.WithRegion(region),
+			config.WithCredentialsProvider(
+				credentials.NewStaticCredentialsProvider(id, secret, ""),
+			),
+		)
+	} else {
+		// Use default credential chain (IAM roles, env vars, ~/.aws/credentials, etc.)
+		cfg, cerr = config.LoadDefaultConfig(ctx,
+			config.WithRegion(region),
+		)
+	}
+
+	if cerr != nil {
+		setupLog.Error(cerr, "unable to load AWS configuration")
 		os.Exit(1)
 	}
 	s3Client := s3.NewFromConfig(cfg)
