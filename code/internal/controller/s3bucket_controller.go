@@ -19,21 +19,21 @@ package controller
 import (
 	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"               // AWS SDK for Go
-	"github.com/aws/aws-sdk-go/aws/awserr"        // For AWS error handling
-	"github.com/aws/aws-sdk-go/service/s3"        // S3 service client
-	corev1 "k8s.io/api/core/v1"                   // Core Kubernetes API types (like ConfigMap)
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1" // Meta types for Kubernetes resources (like ObjectMeta)
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types" // For NamespacedName
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/util/retry"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
+
 	s3v1alpha1 "github.com/victorbecerragit/kube-s3-operator/code/api/v1alpha1"
-	"k8s.io/client-go/util/retry"                                                 // For retrying on conflict errors
-	controllerutil "sigs.k8s.io/controller-runtime/pkg/controller/controllerutil" // For managing finalizers
 )
 
 const (
@@ -45,7 +45,7 @@ const (
 type S3BucketReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
-	S3svc  *s3.S3 // AWS S3 service client defined in main.go
+	S3svc  *s3.Client // AWS S3 service client defined in main.go
 }
 
 // +kubebuilder:rbac:groups=s3.acme.io,resources=s3buckets,verbs=get;list;watch;create;update;patch;delete
@@ -76,7 +76,7 @@ func (r *S3BucketReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// Check if the resource is being deleted
-	if !s3bkt.ObjectMeta.DeletionTimestamp.IsZero() {
+	if !s3bkt.DeletionTimestamp.IsZero() {
 		// Resource is being deleted
 		log.Info("S3Bucket is being deleted", "BucketName", s3bkt.Spec.Name)
 
@@ -158,21 +158,27 @@ func (r *S3BucketReconciler) CreateResource(ctx context.Context, s3bkt *s3v1alph
 	}
 
 	// Create the S3 bucket
-	bucketOutput, err := r.createS3Bucket(ctx, s3bkt)
+	location, err := r.createS3Bucket(ctx, s3bkt)
 	if err != nil {
-		r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE)
+		if err := r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE); err != nil {
+			log.Error(err, "Failed to update status to ERROR")
+		}
 		return fmt.Errorf("failed to create S3 bucket: %w", err)
 	}
 
 	// Wait for bucket to be ready
 	if err := r.waitForBucketReady(ctx, s3bkt); err != nil {
-		r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE)
+		if err := r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE); err != nil {
+			log.Error(err, "Failed to update status to ERROR")
+		}
 		return fmt.Errorf("bucket creation timeout: %w", err)
 	}
 
 	// Create ConfigMap with bucket details
-	if err := r.createBucketConfigMap(ctx, s3bkt, bucketOutput); err != nil {
-		r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE)
+	if err := r.createBucketConfigMap(ctx, s3bkt, location); err != nil {
+		if err := r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE); err != nil {
+			log.Error(err, "Failed to update status to ERROR")
+		}
 		return fmt.Errorf("failed to create ConfigMap: %w", err)
 	}
 
@@ -203,20 +209,28 @@ func (r *S3BucketReconciler) updateBucketStatus(ctx context.Context, s3bkt *s3v1
 	})
 }
 
-// createS3Bucket creates the S3 bucket using AWS SDK
-func (r *S3BucketReconciler) createS3Bucket(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) (*s3.CreateBucketOutput, error) {
+// createS3Bucket creates the S3 bucket using AWS SDK v2
+func (r *S3BucketReconciler) createS3Bucket(
+	ctx context.Context,
+	s3bkt *s3v1alpha1.S3Bucket,
+) (string, error) {
 	log := logf.FromContext(ctx)
 	log.Info("Creating S3 bucket", "BucketName", s3bkt.Spec.Name)
 
-	output, err := r.S3svc.CreateBucket(&s3.CreateBucketInput{
+	output, err := r.S3svc.CreateBucket(ctx, &s3.CreateBucketInput{
 		Bucket:                     aws.String(s3bkt.Spec.Name),
 		ObjectLockEnabledForBucket: aws.Bool(s3bkt.Spec.Locked),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("S3 CreateBucket API call failed: %w", err)
+		return "", fmt.Errorf("S3 CreateBucket API call failed: %w", err)
 	}
 
-	return output, nil
+	// Extract the location from the response
+	location := ""
+	if output.Location != nil {
+		location = *output.Location
+	}
+	return location, nil
 }
 
 // waitForBucketReady waits until the bucket exists and is ready
@@ -224,18 +238,23 @@ func (r *S3BucketReconciler) waitForBucketReady(ctx context.Context, s3bkt *s3v1
 	log := logf.FromContext(ctx)
 	log.Info("Waiting for bucket to be ready", "BucketName", s3bkt.Spec.Name)
 
-	err := r.S3svc.WaitUntilBucketExists(&s3.HeadBucketInput{
-		Bucket: aws.String(s3bkt.Spec.Name),
-	})
-	if err != nil {
-		return fmt.Errorf("bucket did not become ready: %w", err)
+	// Use a simple poll loop to wait for the bucket
+	for i := 0; i < 60; i++ {
+		_, err := r.S3svc.HeadBucket(ctx, &s3.HeadBucketInput{
+			Bucket: aws.String(s3bkt.Spec.Name),
+		})
+		if err == nil {
+			log.Info("Bucket is ready", "BucketName", s3bkt.Spec.Name)
+			return nil
+		}
+		time.Sleep(time.Second)
 	}
 
-	return nil
+	return fmt.Errorf("bucket did not become ready within timeout")
 }
 
 // createBucketConfigMap creates a ConfigMap containing bucket metadata
-func (r *S3BucketReconciler) createBucketConfigMap(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket, bucketOutput *s3.CreateBucketOutput) error {
+func (r *S3BucketReconciler) createBucketConfigMap(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket, location string) error {
 	log := logf.FromContext(ctx)
 	log.Info("Creating ConfigMap for bucket", "BucketName", s3bkt.Spec.Name)
 
@@ -243,7 +262,7 @@ func (r *S3BucketReconciler) createBucketConfigMap(ctx context.Context, s3bkt *s
 		"BucketName": s3bkt.Spec.Name,
 		"Region":     s3bkt.Spec.Region,
 		"Locked":     fmt.Sprintf("%t", s3bkt.Spec.Locked),
-		"location":   aws.StringValue(bucketOutput.Location),
+		"location":   location,
 	}
 
 	cm := &corev1.ConfigMap{
@@ -283,7 +302,9 @@ func (r *S3BucketReconciler) DeleteResource(ctx context.Context, s3bkt *s3v1alph
 
 	// Perform the actual cleanup operations
 	if err := r.performCleanup(ctx, s3bkt); err != nil {
-		r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE)
+		if err := r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE); err != nil {
+			log.Error(err, "Failed to update status to ERROR")
+		}
 		return fmt.Errorf("cleanup failed: %w", err)
 	}
 
@@ -298,8 +319,6 @@ func (r *S3BucketReconciler) DeleteResource(ctx context.Context, s3bkt *s3v1alph
 
 // performCleanup performs all cleanup operations (S3 bucket, ConfigMap, etc.)
 func (r *S3BucketReconciler) performCleanup(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
-	log := logf.FromContext(ctx)
-
 	// Delete the S3 bucket
 	if err := r.deleteS3Bucket(ctx, s3bkt); err != nil {
 		return fmt.Errorf("failed to delete S3 bucket: %w", err)
@@ -311,10 +330,7 @@ func (r *S3BucketReconciler) performCleanup(ctx context.Context, s3bkt *s3v1alph
 	}
 
 	// Delete the ConfigMap (best effort - don't fail if it doesn't exist)
-	if err := r.deleteBucketConfigMap(ctx, s3bkt); err != nil {
-		log.Error(err, "Failed to delete ConfigMap, but bucket is deleted", "BucketName", s3bkt.Spec.Name)
-		// Don't return error - the bucket is already deleted
-	}
+	r.deleteBucketConfigMap(ctx, s3bkt)
 
 	return nil
 }
@@ -361,25 +377,31 @@ func (r *S3BucketReconciler) addFinalizer(ctx context.Context, s3bkt *s3v1alpha1
 	})
 }
 
-// deleteS3Bucket deletes the S3 bucket using AWS SDK
+// deleteS3Bucket deletes the S3 bucket using AWS SDK v2
 func (r *S3BucketReconciler) deleteS3Bucket(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
 	log := logf.FromContext(ctx)
 	log.Info("Deleting S3 bucket", "BucketName", s3bkt.Spec.Name)
 
-	_, err := r.S3svc.DeleteBucket(&s3.DeleteBucketInput{
+	_, err := r.S3svc.DeleteBucket(ctx, &s3.DeleteBucketInput{
 		Bucket: aws.String(s3bkt.Spec.Name),
 	})
 	if err != nil {
-		// Check if bucket doesn't exist (already deleted)
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case s3.ErrCodeNoSuchBucket:
+		var apiErr any
+		if err != nil {
+			apiErr = err.Error()
+		}
+		// Check if bucket doesn't exist (already deleted) or other S3 errors
+		if err != nil {
+			errStr := err.Error()
+			if errStr == "NoSuchBucket" || errStr == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" {
 				log.Info("Bucket already deleted or doesn't exist", "BucketName", s3bkt.Spec.Name)
 				return nil
-			case "BucketNotEmpty":
+			}
+			if errStr == "BucketNotEmpty" {
 				return fmt.Errorf("bucket is not empty, cannot delete: %w", err)
 			}
 		}
+		_ = apiErr
 		return fmt.Errorf("S3 DeleteBucket API call failed: %w", err)
 	}
 
@@ -391,18 +413,24 @@ func (r *S3BucketReconciler) waitForBucketDeleted(ctx context.Context, s3bkt *s3
 	log := logf.FromContext(ctx)
 	log.Info("Waiting for bucket to be deleted", "BucketName", s3bkt.Spec.Name)
 
-	err := r.S3svc.WaitUntilBucketNotExists(&s3.HeadBucketInput{
-		Bucket: aws.String(s3bkt.Spec.Name),
-	})
-	if err != nil {
-		return fmt.Errorf("bucket deletion did not complete: %w", err)
+	// Use a poll loop to wait for the bucket to be deleted
+	for i := 0; i < 60; i++ {
+		_, err := r.S3svc.HeadBucket(ctx, &s3.HeadBucketInput{
+			Bucket: aws.String(s3bkt.Spec.Name),
+		})
+		if err != nil {
+			// Bucket doesn't exist - deletion is complete
+			log.Info("Bucket has been deleted", "BucketName", s3bkt.Spec.Name)
+			return nil
+		}
+		time.Sleep(time.Second)
 	}
 
-	return nil
+	return fmt.Errorf("bucket deletion did not complete within timeout")
 }
 
-// deleteBucketConfigMap deletes the ConfigMap associated with the bucket
-func (r *S3BucketReconciler) deleteBucketConfigMap(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
+// deleteBucketConfigMap deletes the ConfigMap associated with the bucket.
+func (r *S3BucketReconciler) deleteBucketConfigMap(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) {
 	log := logf.FromContext(ctx)
 	log.Info("Deleting ConfigMap for bucket", "BucketName", s3bkt.Spec.Name)
 
@@ -415,13 +443,13 @@ func (r *S3BucketReconciler) deleteBucketConfigMap(ctx context.Context, s3bkt *s
 	err := r.Get(ctx, cmName, cm)
 	if err != nil {
 		log.Info("ConfigMap already deleted or doesn't exist", "ConfigMapName", cmName.Name)
-		return nil
+		return
 	}
 
 	if err := r.Delete(ctx, cm); err != nil {
 		// Already deleted
-		return nil
+		return
 	}
 
-	return nil
+	log.Info("ConfigMap deleted successfully", "ConfigMapName", cmName.Name)
 }
