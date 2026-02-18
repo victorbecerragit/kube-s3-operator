@@ -2,10 +2,10 @@ apiVersion: v1
 entries:
   kube-s3-operator:
   - apiVersion: v2
-    appVersion: 0.2.1
-    created: "2026-02-18T14:03:35.314437834Z"
+    appVersion: 0.2.2
+    created: "2026-02-18T14:36:59.667866163Z"
     description: A Kubernetes operator for managing AWS S3 buckets
-    digest: 308e1fce6bb0d060d27b52d9cbc533b1d0b1c263776a02b3566ce260e05165a6
+    digest: 6e1a5781589201155ea8bac4af5f8d1c3b0834237d1859d14c5cf7191189eb86
     home: https://github.com/victorbecerragit/kube-s3-operator
     keywords:
     - kubernetes
@@ -21,6 +21,6 @@ entries:
     - https://github.com/victorbecerragit/kube-s3-operator
     type: application
     urls:
-    - https://victorbecerragit.github.io/kube-s3-operator/kube-s3-operator-0.2.1.tgz
-    version: 0.2.1
-generated: "2026-02-18T14:03:35.313871881Z"
+    - https://victorbecerragit.github.io/kube-s3-operator/kube-s3-operator-0.2.2.tgz
+    version: 0.2.2
+generated: "2026-02-18T14:36:59.667187313Z"
