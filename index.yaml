@@ -3,9 +3,9 @@ entries:
   kube-s3-operator:
   - apiVersion: v2
     appVersion: 0.2.3
-    created: "2026-02-19T14:24:55.996466113Z"
+    created: "2026-02-19T15:31:47.23994748+01:00"
     description: A Kubernetes operator for managing AWS S3 buckets
-    digest: d5c6e4badbb6baa769535b07409c7e8c2d9283f7c177d684ebcb2a08a5226c0f
+    digest: bb1bcacafad0ebdbc51a212ab09e99d701f00c28f026d440190b93091316dcfb
     home: https://github.com/victorbecerragit/kube-s3-operator
     keywords:
     - kubernetes
@@ -23,4 +23,48 @@ entries:
     urls:
     - https://victorbecerragit.github.io/kube-s3-operator/kube-s3-operator-0.2.3.tgz
     version: 0.2.3
-generated: "2026-02-19T14:24:55.995863213Z"
+  - apiVersion: v2
+    appVersion: 0.2.2
+    created: "2026-02-19T15:31:47.239537648+01:00"
+    description: A Kubernetes operator for managing AWS S3 buckets
+    digest: 4e5e68658cbc14f2a5790d3bd7089bd1ae2e473b78740f9a012ce136020ec3a0
+    home: https://github.com/victorbecerragit/kube-s3-operator
+    keywords:
+    - kubernetes
+    - operator
+    - aws
+    - s3
+    - storage
+    maintainers:
+    - email: vbecerraar@gmail.com
+      name: Victor Becerra
+    name: kube-s3-operator
+    sources:
+    - https://github.com/victorbecerragit/kube-s3-operator
+    type: application
+    urls:
+    - https://victorbecerragit.github.io/kube-s3-operator/kube-s3-operator-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v2
+    appVersion: 0.2.1
+    created: "2026-02-19T15:31:47.238743387+01:00"
+    description: A Kubernetes operator for managing AWS S3 buckets
+    digest: d3e2383ff855f4400980ace43552b18ceeff3c991f1cd8e69718a5661d9d75c4
+    home: https://github.com/victorbecerragit/kube-s3-operator
+    keywords:
+    - kubernetes
+    - operator
+    - aws
+    - s3
+    - storage
+    maintainers:
+    - email: vbecerraar@gmail.com
+      name: Victor Becerra
+    name: kube-s3-operator
+    sources:
+    - https://github.com/victorbecerragit/kube-s3-operator
+    type: application
+    urls:
+    - https://victorbecerragit.github.io/kube-s3-operator/kube-s3-operator-0.2.1.tgz
+    version: 0.2.1
+generated: "2026-02-19T15:31:47.237570788+01:00"
