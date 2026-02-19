@@ -193,11 +193,11 @@ jobs:
           git rm -rf . 2>/dev/null || true
         fi
         
-        # Remove old publish workflow files but keep chart versions
-        echo "Preparing gh-pages branch for update"
-        git rm -rf . 2>/dev/null || rm -rf * .github .gitignore .dockerignore || true
+        # Remove non-chart files (workflows, source code) but PRESERVE existing .tgz packages
+        echo "Preparing gh-pages branch for update (preserving existing chart packages)"
+        rm -rf .github .gitignore .dockerignore 2>/dev/null || true
         
-        # Copy new chart files
+        # Copy new chart files (index.yaml already has merged entries, new .tgz is added)
         echo "Copying chart artifacts to gh-pages branch"
         cp -r /tmp/chart-deploy/* .
         
