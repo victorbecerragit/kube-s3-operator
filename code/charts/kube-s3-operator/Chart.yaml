@@ -2,8 +2,8 @@ apiVersion: v2
 name: kube-s3-operator
 description: A Kubernetes operator for managing AWS S3 buckets
 type: application
-version: 0.2.2
-appVersion: "0.2.2"
+version: 0.2.3
+appVersion: "0.2.3"
 home: https://github.com/victorbecerragit/kube-s3-operator
 sources:
   - https://github.com/victorbecerragit/kube-s3-operator
