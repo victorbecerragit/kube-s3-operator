@@ -11,7 +11,8 @@ controllerManager:
         - ALL
     image:
       repository: victorbecerra/kube-s3-controller
-      tag: latest
+      # Defaults to appVersion from Chart.yaml when empty
+      tag: ""
     imagePullPolicy: IfNotPresent
     resources:
       limits:
@@ -27,6 +28,7 @@ controllerManager:
   replicas: 2
   serviceAccount:
     annotations: {}
+
 # AWS Configuration
 # Set awsCredentials.enabled to true to use AWS credentials from a secret
 # The secret must exist in the same namespace before deployment
@@ -38,6 +40,9 @@ awsCredentials:
   accessKeyIdKey: aws-access-key-id
   secretAccessKeyKey: aws-secret-access-key
 
+# AWS region for S3 operations (optional, defaults to us-west-2 in controller)
+# awsRegion: us-west-2
+
 kubernetesClusterDomain: cluster.local
 metricsService:
   ports:
@@ -46,3 +51,15 @@ metricsService:
     protocol: TCP
     targetPort: 8443
   type: ClusterIP
+
+# -- Node selector for pod scheduling
+nodeSelector: {}
+
+# -- Tolerations for pod scheduling
+tolerations: []
+
+# -- Affinity rules for pod scheduling
+affinity: {}
+
+# -- Custom topology spread constraints (overrides default hostname spreading)
+# topologySpreadConstraints: []

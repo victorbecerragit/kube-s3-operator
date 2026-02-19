@@ -4,11 +4,11 @@ metadata:
   name: {{ include "kube-s3-operator.fullname" . }}-controller-manager-metrics-service
   labels:
     control-plane: controller-manager
+    app.kubernetes.io/component: metrics
   {{- include "kube-s3-operator.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.metricsService.type }}
   selector:
-    app.kubernetes.io/name: code
     control-plane: controller-manager
     {{- include "kube-s3-operator.selectorLabels" . | nindent 4 }}
   ports:

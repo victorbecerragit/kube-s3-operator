@@ -1,0 +1,16 @@
+{{- if gt (int .Values.controllerManager.replicas) 1 }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "kube-s3-operator.fullname" . }}-controller-manager
+  labels:
+    control-plane: controller-manager
+    app.kubernetes.io/component: controller-manager
+  {{- include "kube-s3-operator.labels" . | nindent 4 }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+    {{- include "kube-s3-operator.selectorLabels" . | nindent 6 }}
+{{- end }}
