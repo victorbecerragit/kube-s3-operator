@@ -71,8 +71,7 @@ jobs:
     - name: Build Go project
       run: |
         cd code
-        go build -v ./cmd/...
-        go build -v ./...
+        go build -v -o ./bin/manager ./cmd/main.go
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
