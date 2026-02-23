@@ -1,0 +1,14 @@
+name: "CodeQL Config"
+
+paths:
+  - code
+
+paths-ignore:
+  - "**/test"
+  - "**/vendor"
+
+queries:
+  - uses: security-and-quality
+
+languages:
+  - go
