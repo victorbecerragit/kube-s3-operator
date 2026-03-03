@@ -84,6 +84,47 @@ test-e2e: setup-test-e2e manifests generate fmt vet ## Run the e2e tests. Expect
 cleanup-test-e2e: ## Tear down the Kind cluster used for e2e tests
 	@$(KIND) delete cluster --name $(KIND_CLUSTER)
 
+##@ KUTTL Integration Tests
+
+.PHONY: kuttl-install
+kuttl-install: ## Install KUTTL CLI plugin (kubectl-kuttl)
+	@command -v kubectl-kuttl >/dev/null 2>&1 || { \
+		echo "Installing KUTTL CLI..."; \
+		go install github.com/kudobuilder/kuttl/cmd/kubectl-kuttl@latest; \
+	}
+	@echo "KUTTL CLI is ready. Version:"; \
+	@kubectl kuttl version
+
+.PHONY: setup-test-kuttl
+setup-test-kuttl: ## Set up a Kind cluster for KUTTL tests if it does not exist
+	@command -v $(KIND) >/dev/null 2>&1 || { \
+		echo "Kind is not installed. Please install Kind manually."; \
+		exit 1; \
+	}
+	@if ! $(KIND) get clusters | grep -q $(KIND_CLUSTER); then \
+		$(KIND) create cluster --name $(KIND_CLUSTER); \
+		echo "Kind cluster '$(KIND_CLUSTER)' created"; \
+	else \
+		echo "Kind cluster '$(KIND_CLUSTER)' already exists"; \
+	fi
+
+.PHONY: test-kuttl
+test-kuttl: kuttl-install setup-test-kuttl install deploy ## Run KUTTL tests against a Kind cluster
+	@echo "Running KUTTL tests..."
+	kubectl kuttl test test/kuttl/ --kubectl-namespace=default --timeout=300
+
+.PHONY: test-kuttl-verbose
+test-kuttl-verbose: kuttl-install setup-test-kuttl install deploy ## Run KUTTL tests with verbose output
+	@echo "Running KUTTL tests (verbose)..."
+	kubectl kuttl test test/kuttl/ --kubectl-namespace=default --timeout=300 -v
+
+.PHONY: cleanup-test-kuttl
+cleanup-test-kuttl: ## Tear down the Kind cluster used for KUTTL tests
+	@$(KIND) delete cluster --name $(KIND_CLUSTER)
+
+.PHONY: test-all
+test-all: test test-e2e ## Run all tests (unit, integration, and e2e)
+
 .PHONY: lint
 lint: golangci-lint ## Run golangci-lint linter
 	$(GOLANGCI_LINT) run
