@@ -137,7 +137,7 @@ jobs:
         working-directory: ./code
         run: |
           echo "Starting KUTTL test suite..."
-          kubectl kuttl test test/kuttl/ --timeout=300 --verbose
+          kubectl kuttl test test/kuttl/ --timeout=300
           echo "KUTTL tests completed!"
 
       - name: Capture cluster state on failure
