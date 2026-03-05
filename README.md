@@ -95,6 +95,36 @@ helm install kube-s3-operator kube-s3-operator/kube-s3-operator \
 
 > ⚠️ **Important**: The secret must exist **before** the operator pod starts. If the secret is missing the pod will fail with `CreateContainerConfigError`.
 
+## Testing
+
+The project uses a three-layer testing strategy, each layer catching a different class of problem:
+
+| Layer | Tool | What it validates |
+|-------|------|-------------------|
+| **Unit** | Go `testing` + Ginkgo/Gomega | Controller logic, reconciliation loops, error handling — no cluster needed |
+| **KUTTL** | [KUTTL](https://kuttl.dev) (declarative YAML) | Kubernetes operator behavior — CRD lifecycle, status conditions, drift detection against a real `kind` cluster |
+| **E2E** | Ginkgo + `kind` | Full lifecycle — deploy operator via `make deploy`, create CRs, verify AWS API interactions, test teardown |
+
+### Why KUTTL alongside E2E?
+
+KUTTL tests are plain YAML — no Go code required. Each test is an `apply` + assertion file that anyone can read and write without knowing the codebase. This makes them ideal for validating *Kubernetes-native behavior* (does the `S3Bucket` CR reach `Ready` status? does the controller reconcile after a spec change?) quickly and declaratively.
+
+E2E tests (Ginkgo/Go) handle what KUTTL can't: complex multi-step scenarios, programmatic setup/teardown, real AWS API call verification, and nuanced error-path assertions.
+
+### Run tests locally
+
+```bash
+# Unit tests
+cd code && make test
+
+# KUTTL integration tests (requires a kind cluster named kuttl-test)
+kind create cluster --name kuttl-test
+cd code && make kuttl-test
+
+# E2E tests (cluster is created and destroyed automatically)
+cd code && make test-e2e
+```
+
 ## Recent Updates
 
 ### Latest Release (v2.0.0)
