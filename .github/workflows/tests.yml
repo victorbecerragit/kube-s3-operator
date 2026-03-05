@@ -1,0 +1,238 @@
+name: KUTTL Tests
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'code/**'
+      - '.github/workflows/tests.yml'
+      - 'go.mod'
+      - 'go.sum'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'code/**'
+      - '.github/workflows/tests.yml'
+      - 'go.mod'
+      - 'go.sum'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    name: Unit Tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+          cache-dependency-path: code/go.sum
+
+      - name: Run unit tests
+        working-directory: ./code
+        run: |
+          echo "Running unit tests..."
+          make test
+          echo "Unit tests completed successfully!"
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./code/cover.out
+          flags: unittests
+          fail_ci_if_error: false
+
+  kuttl-tests:
+    runs-on: ubuntu-latest
+    name: KUTTL Integration Tests
+    needs: unit-tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+          cache-dependency-path: code/go.sum
+
+      - name: Setup Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Create Kind config file
+        run: |
+          mkdir -p /tmp
+          cat > /tmp/kind-config.yaml <<EOF
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          nodes:
+          - role: control-plane
+            image: kindest/node:v1.33.1
+          EOF
+          cat /tmp/kind-config.yaml
+
+      - name: Setup Kind cluster
+        uses: helm/kind-action@v1.10.0
+        with:
+          cluster_name: github-ci
+          config: /tmp/kind-config.yaml
+          wait: 10m
+
+      - name: Install KUTTL
+        run: |
+          echo "Installing KUTTL CLI..."
+          KUTTL_VERSION="0.22.0"
+          curl -sSL "https://github.com/kudobuilder/kuttl/releases/download/v${KUTTL_VERSION}/kubectl-kuttl_${KUTTL_VERSION}_linux_x86_64" \
+            -o /usr/local/bin/kubectl-kuttl
+          chmod +x /usr/local/bin/kubectl-kuttl
+          kubectl-kuttl version
+
+      - name: Generate manifests
+        working-directory: ./code
+        run: |
+          echo "Generating CRD and RBAC manifests..."
+          make manifests generate
+          echo "Manifests generated successfully!"
+
+      - name: Install CRDs to cluster
+        working-directory: ./code
+        run: |
+          echo "Installing CRDs to Kind cluster..."
+          make install
+          echo "CRDs installed successfully!"
+
+      - name: Verify CRD installation
+        run: |
+          echo "Verifying S3Bucket CRD..."
+          kubectl get crd s3buckets.s3.acme.io
+          kubectl api-resources | grep -i s3bucket
+
+      - name: Create controller namespace
+        run: kubectl create namespace code-system --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Run KUTTL tests
+        working-directory: ./code/test/kuttl
+        run: |
+          echo "Starting KUTTL test suite..."
+          kubectl-kuttl test --timeout=300
+          echo "KUTTL tests completed!"
+
+      - name: Capture cluster state on failure
+        if: failure()
+        run: |
+          echo "=== Cluster State ===" > cluster-state.txt
+          kubectl get all -A >> cluster-state.txt 2>&1
+          kubectl describe nodes >> cluster-state.txt 2>&1
+          kubectl get events -A >> cluster-state.txt 2>&1
+          echo "=== Controller Logs ===" >> cluster-state.txt
+          kubectl logs -n code-system deployment/code-controller-manager --tail=100 >> cluster-state.txt 2>&1 || true
+          cat cluster-state.txt
+
+      - name: Upload cluster state artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kuttl-cluster-state
+          path: cluster-state.txt
+          retention-days: 7
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    name: E2E Tests
+    needs: kuttl-tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+          cache-dependency-path: code/go.sum
+
+      - name: Run E2E tests
+        working-directory: ./code
+        run: |
+          echo "Running E2E tests..."
+          make test-e2e || {
+            echo "E2E tests failed with exit code $?";
+            exit 1;
+          }
+          echo "E2E tests completed!"
+
+      - name: Capture logs on failure
+        if: failure()
+        working-directory: ./code
+        run: |
+          echo "=== E2E Test Logs ===" > e2e-logs.txt
+          kubectl logs -n code-system --all-containers=true --timestamps=true >> e2e-logs.txt 2>&1 || true
+          kubectl get all -A >> e2e-logs.txt 2>&1 || true
+          cat e2e-logs.txt
+
+      - name: Upload E2E logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-logs
+          path: code/e2e-logs.txt
+          retention-days: 7
+
+  test-summary:
+    runs-on: ubuntu-latest
+    name: Test Summary
+    needs: [unit-tests, kuttl-tests, e2e-tests]
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.unit-tests.result }}" == "failure" ] || \
+             [ "${{ needs.kuttl-tests.result }}" == "failure" ] || \
+             [ "${{ needs.e2e-tests.result }}" == "failure" ]; then
+            echo "❌ Some tests failed!"
+            echo "Unit Tests: ${{ needs.unit-tests.result }}"
+            echo "KUTTL Tests: ${{ needs.kuttl-tests.result }}"
+            echo "E2E Tests: ${{ needs.e2e-tests.result }}"
+            exit 1
+          fi
+          echo "✅ All tests passed!"
+
+      - name: Report test success
+        if: success()
+        run: |
+          echo "✅ All test suites passed successfully!"
+          echo ""
+          echo "Summary:"
+          echo "  - Unit Tests: PASSED"
+          echo "  - KUTTL Tests: PASSED"
+          echo "  - E2E Tests: PASSED"

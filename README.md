@@ -6,6 +6,7 @@
 [![AWS SDK](https://img.shields.io/badge/aws--sdk-v2-orange)](https://github.com/aws/aws-sdk-go-v2)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Release](https://img.shields.io/github/release/victorbecerragit/kube-s3-operator.svg)](https://github.com/victorbecerragit/kube-s3-operator/releases)
+[![Tests](https://github.com/victorbecerragit/kube-s3-operator/actions/workflows/tests.yml/badge.svg)](https://github.com/victorbecerragit/kube-s3-operator/actions/workflows/tests.yml)
 
 A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resources.
 
@@ -17,6 +18,7 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 - ♻️ Automatic reconciliation and drift detection
 - 🎯 Native Kubernetes integration with kubectl
 - 🚀 AWS SDK v2 for enhanced security and performance
+- 🔐 Optional AWS credentials — explicit K8s secrets **or** IAM roles / IRSA (no secret required)
 - ✅ Go 1.25.0 with latest Kubernetes v0.35.1 compatibility
 - 📝 Comprehensive testing with Ginkgo v2.28.1 and Gomega v1.39.0
 
@@ -58,30 +60,76 @@ region: us-west-2
 locked: false
 ```
 
-Create a aws secrets:
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: aws-secret
-type: Opaque
-data:
-  # Replace the following base64 encoded strings with your actual AWS credentials
-  aws-access-key-id: xxxxxxxxxx
-  aws-secret-access-key: xxxxxxxxxxx==
+### AWS Credentials
+
+The operator supports two authentication modes, controlled by the `awsCredentials.enabled` Helm value.
+
+#### Option 1: IAM roles / IRSA — no secret needed (default)
+
+By default (`awsCredentials.enabled: false`) the operator uses the AWS **default credential chain**:
+- IAM role attached to the node or pod (EKS IRSA, EC2 instance profile)
+- `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` environment variables
+- `~/.aws/credentials` file
+- EC2 instance metadata service
+
+```bash
+# Install with default settings — no secret required
+helm install kube-s3-operator kube-s3-operator/kube-s3-operator
 ```
 
-## Documentation - TODO
+#### Option 2: Explicit credentials via Kubernetes Secret
 
-- [Installation Guide](docs/installation.md)
-- [User Guide](docs/user-guide.md)
-- [API Reference](docs/api-reference.md)
-- [Development Guide](docs/development.md)
+Enable this mode to read credentials from a K8s Secret:
+
+```bash
+# 1. Create the secret BEFORE deploying the operator
+kubectl create secret generic aws-secret \
+  --from-literal=aws-access-key-id=YOUR_AWS_ACCESS_KEY_ID \
+  --from-literal=aws-secret-access-key=YOUR_AWS_SECRET_ACCESS_KEY \
+  -n <namespace>
+
+# 2. Install with credentials enabled
+helm install kube-s3-operator kube-s3-operator/kube-s3-operator \
+  --set awsCredentials.enabled=true
+```
+
+> ⚠️ **Important**: The secret must exist **before** the operator pod starts. If the secret is missing the pod will fail with `CreateContainerConfigError`.
+
+## Testing
+
+The project uses a three-layer testing strategy, each layer catching a different class of problem:
+
+| Layer | Tool | What it validates |
+|-------|------|-------------------|
+| **Unit** | Go `testing` + Ginkgo/Gomega | Controller logic, reconciliation loops, error handling — no cluster needed |
+| **KUTTL** | [KUTTL](https://kuttl.dev) (declarative YAML) | Kubernetes operator behavior — CRD lifecycle, status conditions, drift detection against a real `kind` cluster |
+| **E2E** | Ginkgo + `kind` | Full lifecycle — deploy operator via `make deploy`, create CRs, verify AWS API interactions, test teardown |
+
+### Why KUTTL alongside E2E?
+
+KUTTL tests are plain YAML — no Go code required. Each test is an `apply` + assertion file that anyone can read and write without knowing the codebase. This makes them ideal for validating *Kubernetes-native behavior* (does the `S3Bucket` CR reach `Ready` status? does the controller reconcile after a spec change?) quickly and declaratively.
+
+E2E tests (Ginkgo/Go) handle what KUTTL can't: complex multi-step scenarios, programmatic setup/teardown, real AWS API call verification, and nuanced error-path assertions.
+
+### Run tests locally
+
+```bash
+# Unit tests
+cd code && make test
+
+# KUTTL integration tests (requires a kind cluster named kuttl-test)
+kind create cluster --name kuttl-test
+cd code && make kuttl-test
+
+# E2E tests (cluster is created and destroyed automatically)
+cd code && make test-e2e
+```
 
 ## Recent Updates
 
 ### Latest Release (v2.0.0)
 - **AWS SDK Migration**: Upgraded from AWS SDK v1 (EOL: July 31, 2025) to AWS SDK v2
+- **Optional AWS Credentials**: Helm chart now supports both explicit K8s secrets (`awsCredentials.enabled=true`) and AWS default credential chain — IAM roles, IRSA for EKS (`awsCredentials.enabled=false`, default)
 - **Go Update**: Bumped to Go 1.25.0 for latest performance and security improvements
 - **Kubernetes Libraries**: Updated to v0.35.1 (k8s.io/api, k8s.io/apimachinery, k8s.io/client-go)
 - **Controller Runtime**: Updated to v0.23.1 for better stability

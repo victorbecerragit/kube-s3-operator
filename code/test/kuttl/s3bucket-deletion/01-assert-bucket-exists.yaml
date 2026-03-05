@@ -1,0 +1,15 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+metadata:
+  name: assert-bucket-exists
+# Verify the S3Bucket resource was created
+---
+apiVersion: s3.acme.io/v1alpha1
+kind: S3Bucket
+metadata:
+  name: test-bucket-deletion
+  namespace: default
+spec:
+  name: test-bucket-deletion
+  region: us-west-2
+  locked: false
