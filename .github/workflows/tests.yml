@@ -135,6 +135,9 @@ jobs:
           kubectl get crd s3buckets.s3.acme.io
           kubectl api-resources | grep -i s3bucket
 
+      - name: Create controller namespace
+        run: kubectl create namespace code-system --dry-run=client -o yaml | kubectl apply -f -
+
       - name: Run KUTTL tests
         working-directory: ./code/test/kuttl
         run: |
