@@ -1,0 +1,20 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestSuite
+metadata:
+  name: s3bucket-operator-tests
+# Parent directory containing test case subdirectories
+testDirs:
+  - .
+# Run tests sequentially to ensure proper setup/teardown
+parallel: 1
+# Set timeout for overall test suite (in seconds)
+timeout: 300
+# Number of times to retry a failed test before giving up
+# retries: 0
+# Whether to start a control plane (etcd + apiserver)
+# startControlPlane: true
+# Skip delete of resources after test
+# skipDelete: false
+# Test suppression regex patterns - tests matching these patterns will be skipped
+# suppressed:
+#   - "pattern-to-skip"

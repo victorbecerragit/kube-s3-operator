@@ -1,0 +1,9 @@
+apiVersion: s3.acme.io/v1alpha1
+kind: S3Bucket
+metadata:
+  name: test-bucket-basic
+  namespace: default
+spec:
+  name: test-bucket-basic
+  region: us-east-1
+  locked: false

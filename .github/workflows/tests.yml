@@ -107,10 +107,12 @@ jobs:
           wait: 10m
 
       - name: Install KUTTL
-        working-directory: ./code
         run: |
           echo "Installing KUTTL CLI..."
-          go install github.com/kudobuilder/kuttl/cmd/kubectl-kuttl@latest
+          KUTTL_VERSION="0.22.0"
+          curl -sSL "https://github.com/kudobuilder/kuttl/releases/download/v${KUTTL_VERSION}/kubectl-kuttl_${KUTTL_VERSION}_linux_x86_64" \
+            -o /usr/local/bin/kubectl-kuttl
+          chmod +x /usr/local/bin/kubectl-kuttl
           kubectl-kuttl version
 
       - name: Generate manifests
@@ -134,10 +136,10 @@ jobs:
           kubectl api-resources | grep -i s3bucket
 
       - name: Run KUTTL tests
-        working-directory: ./code
+        working-directory: ./code/test/kuttl
         run: |
           echo "Starting KUTTL test suite..."
-          kubectl kuttl test test/kuttl/ --timeout=300
+          kubectl-kuttl test --timeout=300
           echo "KUTTL tests completed!"
 
       - name: Capture cluster state on failure

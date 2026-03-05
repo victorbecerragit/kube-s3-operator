@@ -1,0 +1,7 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+delete:
+  - apiVersion: s3.acme.io/v1alpha1
+    kind: S3Bucket
+    name: test-bucket-deletion
+    namespace: default
