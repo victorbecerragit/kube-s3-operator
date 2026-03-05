@@ -1,0 +1,19 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+metadata:
+  name: assert-bucket-with-labels
+# Verify the S3Bucket resource was created with labels
+---
+apiVersion: s3.acme.io/v1alpha1
+kind: S3Bucket
+metadata:
+  name: test-bucket-labels
+  namespace: default
+  labels:
+    environment: test
+    team: engineering
+    app: s3-test
+spec:
+  name: test-bucket-labels
+  region: eu-west-1
+  locked: false
