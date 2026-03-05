@@ -164,7 +164,7 @@ jobs:
   e2e-tests:
     runs-on: ubuntu-latest
     name: E2E Tests
-    needs: unit-tests
+    needs: kuttl-tests
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

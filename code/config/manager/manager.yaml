@@ -21,7 +21,7 @@ spec:
     matchLabels:
       control-plane: controller-manager
       app.kubernetes.io/name: code
-  replicas: 2
+  replicas: 1
   template:
     metadata:
       annotations:
