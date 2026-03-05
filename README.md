@@ -95,13 +95,6 @@ helm install kube-s3-operator kube-s3-operator/kube-s3-operator \
 
 > ⚠️ **Important**: The secret must exist **before** the operator pod starts. If the secret is missing the pod will fail with `CreateContainerConfigError`.
 
-## Documentation - TODO
-
-- [Installation Guide](docs/installation.md)
-- [User Guide](docs/user-guide.md)
-- [API Reference](docs/api-reference.md)
-- [Development Guide](docs/development.md)
-
 ## Recent Updates
 
 ### Latest Release (v2.0.0)
