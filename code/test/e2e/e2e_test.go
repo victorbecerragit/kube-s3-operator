@@ -65,6 +65,14 @@ var _ = Describe("Manager", Ordered, func() {
 		_, err = utils.Run(cmd)
 		Expect(err).NotTo(HaveOccurred(), "Failed to install CRDs")
 
+		By("creating aws-secret for controller")
+		cmd = exec.Command("kubectl", "create", "secret", "generic", "aws-secret",
+			"--from-literal=aws-access-key-id=test-key-id",
+			"--from-literal=aws-secret-access-key=test-secret-key",
+			"-n", namespace)
+		_, err = utils.Run(cmd)
+		Expect(err).NotTo(HaveOccurred(), "Failed to create aws-secret")
+
 		By("deploying the controller-manager")
 		cmd = exec.Command("make", "deploy", fmt.Sprintf("IMG=%s", projectImage))
 		_, err = utils.Run(cmd)

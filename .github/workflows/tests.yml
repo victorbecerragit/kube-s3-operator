@@ -181,32 +181,6 @@ jobs:
           cache: true
           cache-dependency-path: code/go.sum
 
-      - name: Create Kind config file
-        run: |
-          mkdir -p /tmp
-          cat > /tmp/kind-config-e2e.yaml <<EOF
-          kind: Cluster
-          apiVersion: kind.x-k8s.io/v1alpha4
-          nodes:
-          - role: control-plane
-            image: kindest/node:v1.33.1
-          EOF
-          cat /tmp/kind-config-e2e.yaml
-
-      - name: Setup Kind cluster
-        uses: helm/kind-action@v1.10.0
-        with:
-          cluster_name: github-ci-e2e
-          config: /tmp/kind-config-e2e.yaml
-          wait: 10m
-
-      - name: Setup test environment
-        working-directory: ./code
-        run: |
-          echo "Setting up test environment..."
-          make generate
-          make install
-
       - name: Run E2E tests
         working-directory: ./code
         run: |
