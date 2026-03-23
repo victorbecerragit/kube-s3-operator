@@ -27,13 +27,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-03-10 (UTC)
+Last updated: 2026-03-23 (UTC)
 
-- [Vision AI for Wasabi, Backblaze B2, Cloudflare R2, and more](https://blog.roboflow.com/batch-processing-for-s3-compatible-storage/) — Today we're announcing that Roboflow Batch Processing integrates with the wider ecosystem of S3-compatible storage providers.
-- [R2 Changelog](https://developers.cloudflare.com/changelog/product/r2/) — Super Slurper can now migrate data from any S3-compatible object storage provider to Cloudflare R2. This includes transfers from services like ...
+- [S3-Compatible Storage bucket to destination](https://fivetran.com/docs/connectors/files/s3-compatible-storage) — We have tested the following services with S3-Compatible Storage connector: Cloudflare R2 · MinIO · Oracle Cloud Infrastructure Object Storage · Stackit Obje
+- [S3 Compatible Object Storage Solutions](https://www.cloudflare.com/developer-platform/solutions/s3-compatible-object-storage/) — Cloudflare R2 is compatible with S3. R2's S3-compatible API allows developers to access a wide range of S3 tools, libraries, and extensions.
+- [Releases · sol1/proxs3](https://github.com/sol1/proxs3/releases) — Native S3 storage plugin for Proxmox VE. Use any S3-compatible object store (AWS S3, MinIO, Ceph RGW, Cloudflare R2, Wasabi, etc.) as a ...
+- [Super Slurper now supports migrations from all S3- ...](https://developers.cloudflare.com/changelog/post/2025-02-24-r2-super-slurper-s3-compatible-support/) — Super Slurper can now migrate data from any S3-compatible object storage provider to Cloudflare R2. This includes transfers from services ...
 - [Choosing the Right S3 Alternatives for Artifact Storage](https://blog.inedo.com/proget/s3-alternatives) — Cloud and on-premises S3-compatible providers like Cloudflare R2, Wasabi, Backblaze B2, and MinIO let teams reduce storage expenses, eliminate ...
-- [S3 Data Management with Ceph RGW Tiering, and Chorus](https://ceph.io/en/community/events/2025/ceph-days-berlin/assets/8_Ceph_Days_Berlin_Sirisha_Guduru-Artem_Torubarov_RGW_tiering_and_chorus.pdf) — ○ S3 ⇔ S3: Ceph | Minio | AWS | Any S3-compatible storage ✓. ○ Payload ... ○ Versioned buckets ✓ - versionID retained for Ceph & Minio - next releas
-- [S3 Drive | Map S3 Storage as a Local Drive](https://www.callback.com/s3drive) — S3 Drive is a simple utility that enables you to connect and work with any S3 compatible service as a local drive. You can easily manage your remote files ...
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
