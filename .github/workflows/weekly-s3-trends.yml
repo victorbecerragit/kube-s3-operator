@@ -47,7 +47,8 @@ jobs:
 
       - name: Update README with trends
         run: |
-          go run ./code/tools/readme_trends --input /tmp/serp-output.txt --readme ./README.md --max 5
+          cd code
+          go run ./tools/readme_trends --input /tmp/serp-output.txt --readme ../README.md --max 5
 
       - name: Commit and push updates
         run: |
