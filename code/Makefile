@@ -92,8 +92,8 @@ kuttl-install: ## Install KUTTL CLI plugin (kubectl-kuttl)
 		echo "Installing KUTTL CLI..."; \
 		go install github.com/kudobuilder/kuttl/cmd/kubectl-kuttl@latest; \
 	}
-	@echo "KUTTL CLI is ready. Version:"; \
-	@kubectl kuttl version
+	@echo "KUTTL CLI is ready. Version:";
+	@if [ "$SHELL" != "/usr/bin/fish" ]; then kubectl kuttl version; else echo "(skipped kubectl kuttl version for fish shell)"; fi
 
 .PHONY: setup-test-kuttl
 setup-test-kuttl: ## Set up a Kind cluster for KUTTL tests if it does not exist
@@ -111,12 +111,12 @@ setup-test-kuttl: ## Set up a Kind cluster for KUTTL tests if it does not exist
 .PHONY: test-kuttl
 test-kuttl: kuttl-install setup-test-kuttl install deploy ## Run KUTTL tests against a Kind cluster
 	@echo "Running KUTTL tests..."
-	kubectl kuttl test test/kuttl/ --kubectl-namespace=default --timeout=300
+	kubectl kuttl test test/kuttl/ --namespace=default --timeout=300
 
 .PHONY: test-kuttl-verbose
 test-kuttl-verbose: kuttl-install setup-test-kuttl install deploy ## Run KUTTL tests with verbose output
 	@echo "Running KUTTL tests (verbose)..."
-	kubectl kuttl test test/kuttl/ --kubectl-namespace=default --timeout=300 -v
+	kubectl kuttl test test/kuttl/ --namespace=default --timeout=300 -v
 
 .PHONY: cleanup-test-kuttl
 cleanup-test-kuttl: ## Tear down the Kind cluster used for KUTTL tests
