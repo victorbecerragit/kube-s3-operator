@@ -23,6 +23,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -120,7 +121,13 @@ func (r *S3BucketReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	case s3v1alpha1.CREATED_STATE:
 		// Resource exists and is healthy
 		log.Info("S3 bucket is in CREATED state", "BucketName", s3bkt.Spec.Name)
-		// Add any update/sync logic here if needed
+		// Ensure lifecycle configuration is applied (idempotent call).
+		if err := r.applyLifecycleConfiguration(ctx, s3bkt); err != nil {
+			if err2 := r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE); err2 != nil {
+				log.Error(err2, "Failed to update status to ERROR")
+			}
+			return ctrl.Result{}, err
+		}
 		return ctrl.Result{}, nil
 
 	case s3v1alpha1.ERROR_STATE:
@@ -174,6 +181,14 @@ func (r *S3BucketReconciler) CreateResource(ctx context.Context, s3bkt *s3v1alph
 		return fmt.Errorf("bucket creation timeout: %w", err)
 	}
 
+	// Apply lifecycle configuration (optional).
+	if err := r.applyLifecycleConfiguration(ctx, s3bkt); err != nil {
+		if err := r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE); err != nil {
+			log.Error(err, "Failed to update status to ERROR")
+		}
+		return fmt.Errorf("failed to apply lifecycle configuration: %w", err)
+	}
+
 	// Create ConfigMap with bucket details
 	if err := r.createBucketConfigMap(ctx, s3bkt, location); err != nil {
 		if err := r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE); err != nil {
@@ -188,6 +203,94 @@ func (r *S3BucketReconciler) CreateResource(ctx context.Context, s3bkt *s3v1alph
 	}
 
 	log.Info("S3 Bucket created successfully", "BucketName", s3bkt.Spec.Name)
+	return nil
+}
+
+func (r *S3BucketReconciler) applyLifecycleConfiguration(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
+	if s3bkt.Spec.Lifecycle == nil || len(s3bkt.Spec.Lifecycle.Rules) == 0 {
+		return nil
+	}
+
+	rules := make([]s3types.LifecycleRule, 0, len(s3bkt.Spec.Lifecycle.Rules))
+	for i, rule := range s3bkt.Spec.Lifecycle.Rules {
+		status := rule.Status
+		if status == "" {
+			status = "Enabled"
+		}
+
+		awsStatus := s3types.ExpirationStatusEnabled
+		if status == "Disabled" {
+			awsStatus = s3types.ExpirationStatusDisabled
+		}
+
+		awsRule := s3types.LifecycleRule{
+			Status: awsStatus,
+		}
+
+		if rule.ID != "" {
+			awsRule.ID = aws.String(rule.ID)
+		} else {
+			// Ensure a stable ID for drift/idempotency.
+			awsRule.ID = aws.String(fmt.Sprintf("%s-rule-%d", s3bkt.Name, i))
+		}
+
+		if rule.Prefix != "" {
+			awsRule.Filter = &s3types.LifecycleRuleFilterMemberPrefix{
+				Value: rule.Prefix,
+			}
+		}
+
+		if rule.Expiration != nil && rule.Expiration.Days > 0 {
+			awsRule.Expiration = &s3types.LifecycleExpiration{
+				Days: aws.Int32(rule.Expiration.Days),
+			}
+		}
+
+		if len(rule.Transitions) > 0 {
+			awsRule.Transitions = make([]s3types.Transition, 0, len(rule.Transitions))
+			for _, t := range rule.Transitions {
+				if t.Days <= 0 || t.StorageClass == "" {
+					continue
+				}
+				awsRule.Transitions = append(awsRule.Transitions, s3types.Transition{
+					Days:          aws.Int32(t.Days),
+					StorageClass: s3types.TransitionStorageClass(t.StorageClass),
+				})
+			}
+		}
+
+		if rule.NoncurrentVersionExpiration != nil && rule.NoncurrentVersionExpiration.Days > 0 {
+			awsRule.NoncurrentVersionExpiration = &s3types.NoncurrentVersionExpiration{
+				NoncurrentDays: aws.Int32(rule.NoncurrentVersionExpiration.Days),
+			}
+		}
+
+		if len(rule.NoncurrentVersionTransitions) > 0 {
+			awsRule.NoncurrentVersionTransitions = make([]s3types.NoncurrentVersionTransition, 0, len(rule.NoncurrentVersionTransitions))
+			for _, t := range rule.NoncurrentVersionTransitions {
+				if t.Days <= 0 || t.StorageClass == "" {
+					continue
+				}
+				awsRule.NoncurrentVersionTransitions = append(awsRule.NoncurrentVersionTransitions, s3types.NoncurrentVersionTransition{
+					NoncurrentDays: aws.Int32(t.Days),
+					StorageClass:   s3types.TransitionStorageClass(t.StorageClass),
+				})
+			}
+		}
+
+		rules = append(rules, awsRule)
+	}
+
+	input := &s3.PutBucketLifecycleConfigurationInput{
+		Bucket: aws.String(s3bkt.Spec.Name),
+		LifecycleConfiguration: &s3types.BucketLifecycleConfiguration{
+			Rules: rules,
+		},
+	}
+	_, err := r.S3svc.PutBucketLifecycleConfiguration(ctx, input)
+	if err != nil {
+		return fmt.Errorf("PutBucketLifecycleConfiguration failed: %w", err)
+	}
 	return nil
 }
 
