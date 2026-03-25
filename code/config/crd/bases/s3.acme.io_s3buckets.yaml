@@ -58,6 +58,70 @@ spec:
               name:
                 description: Name is the name of the S3 bucket
                 type: string
+              lifecycle:
+                description: Lifecycle is the desired lifecycle configuration for the bucket.
+                nullable: true
+                type: object
+                properties:
+                  rules:
+                    description: Rules is the list of lifecycle rules applied to the bucket.
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          description: ID is an identifier for the rule.
+                          type: string
+                        status:
+                          description: Status indicates whether the rule is enabled or disabled ("Enabled" or "Disabled").
+                          type: string
+                        prefix:
+                          description: Prefix limits the rule to objects that start with this prefix.
+                          type: string
+                        expiration:
+                          description: Expiration configures when to delete objects.
+                          nullable: true
+                          type: object
+                          properties:
+                            days:
+                              description: Days specifies the number of days after creation when objects are deleted.
+                              format: int32
+                              type: integer
+                        transitions:
+                          description: Transitions configures storage-class transitions for current object versions.
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              days:
+                                description: Days specifies the number of days after creation when the transition occurs.
+                                format: int32
+                                type: integer
+                              storageClass:
+                                description: StorageClass is the destination storage class (e.g., "STANDARD_IA", "GLACIER").
+                                type: string
+                        noncurrentVersionExpiration:
+                          description: NoncurrentVersionExpiration configures when to delete non-current object versions.
+                          nullable: true
+                          type: object
+                          properties:
+                            days:
+                              description: Days specifies the number of days after creation when objects are deleted.
+                              format: int32
+                              type: integer
+                        noncurrentVersionTransitions:
+                          description: NoncurrentVersionTransitions configures storage-class transitions for non-current object versions.
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              days:
+                                description: Days specifies the number of days after creation when the transition occurs.
+                                format: int32
+                                type: integer
+                              storageClass:
+                                description: StorageClass is the destination storage class (e.g., "STANDARD_IA", "GLACIER").
+                                type: string
               region:
                 description: Region is the AWS region where the bucket will be created
                 type: string
