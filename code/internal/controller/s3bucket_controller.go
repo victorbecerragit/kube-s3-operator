@@ -253,7 +253,7 @@ func (r *S3BucketReconciler) applyLifecycleConfiguration(ctx context.Context, s3
 					continue
 				}
 				awsRule.Transitions = append(awsRule.Transitions, s3types.Transition{
-					Days:          aws.Int32(t.Days),
+					Days:         aws.Int32(t.Days),
 					StorageClass: s3types.TransitionStorageClass(t.StorageClass),
 				})
 			}
