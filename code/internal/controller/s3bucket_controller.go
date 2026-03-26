@@ -259,10 +259,10 @@ func (r *S3BucketReconciler) applyLifecycleConfiguration(s3Client *s3.Client, ct
 			awsRule.ID = aws.String(fmt.Sprintf("%s-rule-%d", s3bkt.Name, i))
 		}
 
-			       // AWS requires a Filter for all objects; use empty Prefix for all objects
-			       awsRule.Filter = &s3types.LifecycleRuleFilterMemberPrefix{
-				       Value: rule.Prefix,
-			       }
+		// AWS requires a Filter for all objects; use empty Prefix for all objects
+		awsRule.Filter = &s3types.LifecycleRuleFilterMemberPrefix{
+			Value: rule.Prefix,
+		}
 
 		if rule.Expiration != nil && rule.Expiration.Days > 0 {
 			awsRule.Expiration = &s3types.LifecycleExpiration{
