@@ -1,0 +1,22 @@
+apiVersion: s3.acme.io/v1alpha1
+kind: S3Bucket
+metadata:
+  name: test-lifecycle-bucket
+  namespace: kube-s3-operator
+spec:
+  name: test-lifecycle-bucket-12345678
+  region: us-west-2
+  lifecycle:
+    rules:
+      - id: expire-old-objects
+        status: Enabled
+        expiration:
+          days: 30
+        prefix: "logs/"
+      - id: transition-to-glacier
+        status: Enabled
+        transitions:
+          - days: 60
+            storageClass: GLACIER
+        prefix: "archive/"
+  locked: false

@@ -17,17 +17,11 @@ limitations under the License.
 package main
 
 import (
-	"context"
 	"crypto/tls"
 	"flag"
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -223,59 +217,11 @@ func main() {
 	setupLog.Info("Initializing AWS S3 client")
 
 	// Check for explicit AWS credentials
-	id, idOk := os.LookupEnv("AWS_ACCESS_KEY_ID")
-	secret, secretOk := os.LookupEnv("AWS_SECRET_ACCESS_KEY")
-
-	// If credentials are provided, use them; otherwise the default credential chain will be used
-	if idOk && secretOk {
-		setupLog.Info(
-			"AWS credentials provided via environment variables",
-		)
-	} else if idOk || secretOk {
-		setupLog.V(1).Info("AWS credentials incomplete",
-			"hasAccessKey", idOk, "hasSecretKey", secretOk)
-		setupLog.Info("Will attempt to use default credential chain")
-	} else {
-		setupLog.Info("AWS credentials not provided, using default credential chain")
-	}
-
-	region, ok := os.LookupEnv("AWS_REGION")
-	if !ok {
-		setupLog.Info("AWS_REGION environment variable not set, using default us-west-2")
-		region = "us-west-2" // default region
-	}
-
-	// Initialize AWS S3 client using AWS SDK v2
-	ctx := context.Background()
-	var cfg aws.Config
-	var cerr error
-
-	// Use provided credentials if available, otherwise rely on default credential chain
-	if idOk && secretOk {
-		cfg, cerr = config.LoadDefaultConfig(ctx,
-			config.WithRegion(region),
-			config.WithCredentialsProvider(
-				credentials.NewStaticCredentialsProvider(id, secret, ""),
-			),
-		)
-	} else {
-		// Use default credential chain (IAM roles, env vars, ~/.aws/credentials, etc.)
-		cfg, cerr = config.LoadDefaultConfig(ctx,
-			config.WithRegion(region),
-		)
-	}
-
-	if cerr != nil {
-		setupLog.Error(cerr, "unable to load AWS configuration")
-		os.Exit(1)
-	}
-	s3Client := s3.NewFromConfig(cfg)
 
 	// Pass the s3Client to the reconciler
 	if err = (&controller.S3BucketReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
-		S3svc:  s3Client,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "S3Bucket")
 		os.Exit(1)

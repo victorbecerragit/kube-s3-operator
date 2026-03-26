@@ -10,9 +10,9 @@ controllerManager:
         drop:
         - ALL
     image:
-      repository: victorbecerra/kube-s3-controller
+      repository: victorbecerra/s3-controller
       # Defaults to appVersion from Chart.yaml when empty
-      tag: ""
+      tag: "latest"
     imagePullPolicy: IfNotPresent
     resources:
       limits:
@@ -39,6 +39,9 @@ awsCredentials:
   # Secret keys for AWS credentials
   accessKeyIdKey: aws-access-key-id
   secretAccessKeyKey: aws-secret-access-key
+  # Optionally provide credentials here to have Helm create the secret
+  accessKeyId: ""
+  secretAccessKey: ""
 
 # AWS region for S3 operations (optional, defaults to us-west-2 in controller)
 # awsRegion: us-west-2
