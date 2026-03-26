@@ -16,6 +16,10 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 - 🔒 Bucket locking support to prevent accidental deletion
 - 🌍 Multi-region bucket creation
 - ♻️ Automatic reconciliation and drift detection
+- 🏷️ **S3 Lifecycle Policy Support**: Define and manage S3 bucket lifecycle rules (expiration, transition, etc.) via CRD spec
+- 🌐 **Region Auto-Detection**: Automatically detects and uses the correct AWS region for each bucket
+- 🧹 **Automatic S3 Bucket Cleanup in Tests**: All S3 buckets created during tests are deleted after each test run
+- 🛡️ **Secure Commit History**: All AWS credentials and secrets are fully removed from the repository history
 - 🎯 Native Kubernetes integration with kubectl
 - 🚀 AWS SDK v2 for enhanced security and performance
 - 🔐 Optional AWS credentials — explicit K8s secrets **or** IAM roles / IRSA (no secret required)
