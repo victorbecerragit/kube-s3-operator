@@ -5,8 +5,11 @@ permissions:
 
 on:
   schedule:
-    - cron: "0 6 * * 1"
+    - cron: '0 6 * * 1'
   workflow_dispatch:
+  push:
+    paths:
+      - 'code/**'
 
 concurrency:
   group: weekly-s3-trends
