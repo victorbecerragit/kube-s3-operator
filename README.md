@@ -31,13 +31,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-03-23 (UTC)
+Last updated: 2026-03-26 (UTC)
 
-- [S3-Compatible Storage bucket to destination](https://fivetran.com/docs/connectors/files/s3-compatible-storage) — We have tested the following services with S3-Compatible Storage connector: Cloudflare R2 · MinIO · Oracle Cloud Infrastructure Object Storage · Stackit Obje
-- [S3 Compatible Object Storage Solutions](https://www.cloudflare.com/developer-platform/solutions/s3-compatible-object-storage/) — Cloudflare R2 is compatible with S3. R2's S3-compatible API allows developers to access a wide range of S3 tools, libraries, and extensions.
-- [Releases · sol1/proxs3](https://github.com/sol1/proxs3/releases) — Native S3 storage plugin for Proxmox VE. Use any S3-compatible object store (AWS S3, MinIO, Ceph RGW, Cloudflare R2, Wasabi, etc.) as a ...
+- [Centralize Amazon S3, Wasabi, and Cloudflare R2 with ...](https://rcloneview.com/support/blog/centralize-s3-wasabi-cloudflare-r2-with-rcloneview) — Unify and manage all your S3-compatible cloud storage—Amazon S3, Wasabi, and Cloudflare R2—through one intuitive GUI.
 - [Super Slurper now supports migrations from all S3- ...](https://developers.cloudflare.com/changelog/post/2025-02-24-r2-super-slurper-s3-compatible-support/) — Super Slurper can now migrate data from any S3-compatible object storage provider to Cloudflare R2. This includes transfers from services ...
+- [Cloudflare Announces R2 Storage; Rapid and Reliable S3- ...](https://www.cloudflare.com/press/press-releases/2021/cloudflare-announces-r2-storage/) — Cloudflare announced Cloudflare R2 Storage, a better way for developers to store everything they need with automatic migration of data from ...
 - [Choosing the Right S3 Alternatives for Artifact Storage](https://blog.inedo.com/proget/s3-alternatives) — Cloud and on-premises S3-compatible providers like Cloudflare R2, Wasabi, Backblaze B2, and MinIO let teams reduce storage expenses, eliminate ...
+- [The Guide to Seamless and Version-Safe Migration to Ceph](https://www.clyso.com/eu/en/news/addressing-minio-licensing-changes-the-guide-to-seamless-and-version-safe-migration-to-ceph) — The Guide to Moving from MinIO to Sovereign Ceph RGW Object Storage without losing a single version history. Clyso Author. Kristina Seel. Dec 2, 2025 • ...
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
