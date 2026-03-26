@@ -29,9 +29,40 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	s3v1alpha1 "github.com/victorbecerragit/kube-s3-operator/code/api/v1alpha1"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 var _ = Describe("S3Bucket Controller", func() {
+	// Helper to delete S3 bucket and all contents
+	deleteS3BucketAndContents := func(ctx context.Context, bucketName, region string) error {
+		cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
+		if err != nil {
+			return err
+		}
+		s3Client := s3.NewFromConfig(cfg)
+
+		// List and delete all objects
+		listResp, err := s3Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+			Bucket: aws.String(bucketName),
+		})
+		if err == nil {
+			for _, obj := range listResp.Contents {
+				_, _ = s3Client.DeleteObject(ctx, &s3.DeleteObjectInput{
+					Bucket: aws.String(bucketName),
+					Key:    obj.Key,
+				})
+			}
+		}
+
+		// Delete the bucket
+		_, err = s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
+			Bucket: aws.String(bucketName),
+		})
+		return err
+	}
 	const testRegion = "us-west-2"
 	ctx := context.Background()
 
@@ -51,6 +82,16 @@ var _ = Describe("S3Bucket Controller", func() {
 		return bucket
 	}
 
+	var createdBuckets []string
+
+	AfterEach(func() {
+		// Clean up all created buckets in AWS
+		for _, b := range createdBuckets {
+			_ = deleteS3BucketAndContents(ctx, b, testRegion)
+		}
+		createdBuckets = nil
+	})
+
 	It("should reconcile and set status transitions", func() {
 		resourceName := uniqueName("test-resource")
 		bucketName := uniqueName("test-bucket")
@@ -67,6 +108,7 @@ var _ = Describe("S3Bucket Controller", func() {
 			},
 		}
 		Expect(k8sClient.Create(ctx, resource)).To(Succeed())
+		createdBuckets = append(createdBuckets, bucketName)
 
 		controllerReconciler := &S3BucketReconciler{
 			Client: k8sClient,
@@ -118,6 +160,7 @@ var _ = Describe("S3Bucket Controller", func() {
 	It("should handle lifecycle configuration in spec", func() {
 		resourceName := uniqueName("test-resource-lifecycle")
 		bucketName := uniqueName("test-bucket-lifecycle")
+		createdBuckets = append(createdBuckets, bucketName)
 		By("creating S3Bucket with lifecycle rules")
 		resource := &s3v1alpha1.S3Bucket{
 			ObjectMeta: metav1.ObjectMeta{
@@ -174,6 +217,7 @@ var _ = Describe("S3Bucket Controller", func() {
 	It("should set ERROR state on AWS failure", func() {
 		resourceName := uniqueName("test-resource-error")
 		bucketName := uniqueName("test-bucket-error")
+		createdBuckets = append(createdBuckets, bucketName)
 		By("creating S3Bucket with invalid region to force error")
 		resource := &s3v1alpha1.S3Bucket{
 			ObjectMeta: metav1.ObjectMeta{
