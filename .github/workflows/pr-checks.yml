@@ -8,6 +8,8 @@ on:
     branches:
       - main
       - develop
+    paths:
+      - 'code/**'
   workflow_dispatch:
 
 concurrency:
@@ -53,26 +55,6 @@ jobs:
             echo "⚠️  Found TODO/FIXME comments - please address them before merging"
           fi
 
-  quick-unit-tests:
-    runs-on: ubuntu-latest
-    name: Quick Unit Tests
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Go environment
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.25'
-          cache: true
-          cache-dependency-path: code/go.sum
-
-      - name: Run unit tests
-        working-directory: ./code
-        run: |
-          echo "Running unit tests..."
-          make test
-          echo "✅ Unit tests passed"
 
   manifest-validation:
     runs-on: ubuntu-latest
@@ -110,17 +92,15 @@ jobs:
   pr-check-summary:
     runs-on: ubuntu-latest
     name: PR Check Summary
-    needs: [lint-and-format, quick-unit-tests, manifest-validation]
+    needs: [lint-and-format, manifest-validation]
     if: always()
     steps:
       - name: Verify all checks passed
         run: |
           if [ "${{ needs.lint-and-format.result }}" != "success" ] || \
-             [ "${{ needs.quick-unit-tests.result }}" != "success" ] || \
              [ "${{ needs.manifest-validation.result }}" != "success" ]; then
             echo "❌ Some PR checks failed!"
             echo "Lint & Format: ${{ needs.lint-and-format.result }}"
-            echo "Unit Tests: ${{ needs.quick-unit-tests.result }}"
             echo "Manifest Validation: ${{ needs.manifest-validation.result }}"
             exit 1
           fi

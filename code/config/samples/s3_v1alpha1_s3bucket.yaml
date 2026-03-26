@@ -10,4 +10,13 @@ spec:
   name: my-bucket-test-acme-2025
   region: us-west-2
   locked: false
+  lifecycle:
+    rules:
+      - id: expire-30-days
+        status: Enabled
+        expiration:
+          days: 30
+        transitions:
+          - days: 7
+            storageClass: STANDARD_IA
   #accessControl: private

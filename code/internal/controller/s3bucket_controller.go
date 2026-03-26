@@ -18,11 +18,17 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/aws/smithy-go"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -45,7 +51,7 @@ const (
 type S3BucketReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
-	S3svc  *s3.Client // AWS S3 service client defined in main.go
+	// S3svc removed: always use per-reconcile region-specific client
 }
 
 // +kubebuilder:rbac:groups=s3.acme.io,resources=s3buckets,verbs=get;list;watch;create;update;patch;delete
@@ -75,23 +81,29 @@ func (r *S3BucketReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, nil
 	}
 
+	region := s3bkt.Spec.Region
+	if region == "" {
+		region = "us-west-2"
+	}
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
+	if err != nil {
+		log.Error(err, "Failed to load AWS config for region", "region", region)
+		return ctrl.Result{}, err
+	}
+	s3Client := s3.NewFromConfig(cfg)
+	log.Info("Using dynamic S3 client", "region", region, "bucket", s3bkt.Spec.Name)
+
 	// Check if the resource is being deleted
 	if !s3bkt.DeletionTimestamp.IsZero() {
-		// Resource is being deleted
 		log.Info("S3Bucket is being deleted", "BucketName", s3bkt.Spec.Name)
-
 		if controllerutil.ContainsFinalizer(s3bkt, s3BucketFinalizer) {
-			// Our finalizer is present, so handle deletion
-			if err := r.DeleteResource(ctx, s3bkt); err != nil {
+			if err := r.DeleteResource(s3Client, ctx, s3bkt); err != nil {
 				log.Error(err, "Failed to delete S3 bucket resources")
 				return ctrl.Result{}, err
 			}
-			// Remove finalizer after successful deletion
 			controllerutil.RemoveFinalizer(s3bkt, s3BucketFinalizer)
 			_ = r.Update(ctx, s3bkt)
-			// DeleteResource handles finalizer removal internally
 		}
-
 		return ctrl.Result{}, nil
 	}
 
@@ -109,27 +121,28 @@ func (r *S3BucketReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// Handle creation or update logic based on current state
 	switch s3bkt.Status.State {
 	case "":
-		// New resource - create it
 		log.Info("Creating new S3 bucket", "BucketName", s3bkt.Spec.Name)
-		if err := r.CreateResource(ctx, s3bkt); err != nil {
+		if err := r.CreateResource(s3Client, ctx, s3bkt); err != nil {
 			log.Error(err, "Failed to create S3 bucket")
 			return ctrl.Result{}, err
 		}
 		return ctrl.Result{}, nil
 
 	case s3v1alpha1.CREATED_STATE:
-		// Resource exists and is healthy
 		log.Info("S3 bucket is in CREATED state", "BucketName", s3bkt.Spec.Name)
-		// Add any update/sync logic here if needed
+		if err := r.applyLifecycleConfiguration(s3Client, ctx, s3bkt); err != nil {
+			if err2 := r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE); err2 != nil {
+				log.Error(err2, "Failed to update status to ERROR")
+			}
+			return ctrl.Result{}, err
+		}
 		return ctrl.Result{}, nil
 
 	case s3v1alpha1.ERROR_STATE:
-		// Resource is in error state - might want to retry or alert
 		log.Info("S3 bucket is in ERROR state", "BucketName", s3bkt.Spec.Name)
 		return ctrl.Result{RequeueAfter: time.Minute * 5}, nil
 
 	case s3v1alpha1.CREATING_STATE, s3v1alpha1.DELETING_STATE:
-		// Transitional state - requeue to check later
 		log.Info("S3 bucket in transitional state", "BucketName", s3bkt.Spec.Name, "State", s3bkt.Status.State)
 		return ctrl.Result{RequeueAfter: time.Second * 30}, nil
 
@@ -148,7 +161,7 @@ func (r *S3BucketReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 // CreateResource creates a new S3 bucket resource
-func (r *S3BucketReconciler) CreateResource(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
+func (r *S3BucketReconciler) CreateResource(s3Client *s3.Client, ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
 	log := logf.FromContext(ctx)
 	log.Info("Starting creation of S3 Bucket", "BucketName", s3bkt.Spec.Name)
 
@@ -156,9 +169,8 @@ func (r *S3BucketReconciler) CreateResource(ctx context.Context, s3bkt *s3v1alph
 	if err := r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.CREATING_STATE); err != nil {
 		return fmt.Errorf("failed to update status to CREATING: %w", err)
 	}
-
 	// Create the S3 bucket
-	location, err := r.createS3Bucket(ctx, s3bkt)
+	location, err := r.createS3Bucket(s3Client, ctx, s3bkt)
 	if err != nil {
 		if err := r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE); err != nil {
 			log.Error(err, "Failed to update status to ERROR")
@@ -167,11 +179,19 @@ func (r *S3BucketReconciler) CreateResource(ctx context.Context, s3bkt *s3v1alph
 	}
 
 	// Wait for bucket to be ready
-	if err := r.waitForBucketReady(ctx, s3bkt); err != nil {
+	if err := r.waitForBucketReady(s3Client, ctx, s3bkt); err != nil {
 		if err := r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE); err != nil {
 			log.Error(err, "Failed to update status to ERROR")
 		}
 		return fmt.Errorf("bucket creation timeout: %w", err)
+	}
+
+	// Apply lifecycle configuration (optional).
+	if err := r.applyLifecycleConfiguration(s3Client, ctx, s3bkt); err != nil {
+		if err := r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE); err != nil {
+			log.Error(err, "Failed to update status to ERROR")
+		}
+		return fmt.Errorf("failed to apply lifecycle configuration: %w", err)
 	}
 
 	// Create ConfigMap with bucket details
@@ -188,6 +208,113 @@ func (r *S3BucketReconciler) CreateResource(ctx context.Context, s3bkt *s3v1alph
 	}
 
 	log.Info("S3 Bucket created successfully", "BucketName", s3bkt.Spec.Name)
+	return nil
+}
+
+func (r *S3BucketReconciler) applyLifecycleConfiguration(s3Client *s3.Client, ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
+	if s3bkt.Spec.Lifecycle == nil || len(s3bkt.Spec.Lifecycle.Rules) == 0 {
+		return nil
+	}
+
+	// --- BEGIN REGION AUTO-DETECTION PATCH ---
+	// Always detect the actual region of the bucket before applying lifecycle configuration
+	bucketRegion := s3bkt.Spec.Region
+	if bucketRegion == "" {
+		bucketRegion = "us-west-2"
+	}
+	// Try to get the actual region from AWS if the bucket already exists
+	getLocOut, err := s3Client.GetBucketLocation(ctx, &s3.GetBucketLocationInput{
+		Bucket: aws.String(s3bkt.Spec.Name),
+	})
+	if err == nil && getLocOut.LocationConstraint != "" && string(getLocOut.LocationConstraint) != bucketRegion {
+		// Re-init client with the actual region
+		bucketRegion = string(getLocOut.LocationConstraint)
+		cfg, cfgErr := config.LoadDefaultConfig(ctx, config.WithRegion(bucketRegion))
+		if cfgErr == nil {
+			s3Client = s3.NewFromConfig(cfg)
+		}
+	}
+	// --- END REGION AUTO-DETECTION PATCH ---
+
+	rules := make([]s3types.LifecycleRule, 0, len(s3bkt.Spec.Lifecycle.Rules))
+	for i, rule := range s3bkt.Spec.Lifecycle.Rules {
+		status := rule.Status
+		if status == "" {
+			status = "Enabled"
+		}
+
+		awsStatus := s3types.ExpirationStatusEnabled
+		if status == "Disabled" {
+			awsStatus = s3types.ExpirationStatusDisabled
+		}
+
+		awsRule := s3types.LifecycleRule{
+			Status: awsStatus,
+		}
+
+		if rule.ID != "" {
+			awsRule.ID = aws.String(rule.ID)
+		} else {
+			// Ensure a stable ID for drift/idempotency.
+			awsRule.ID = aws.String(fmt.Sprintf("%s-rule-%d", s3bkt.Name, i))
+		}
+
+		// AWS requires a Filter for all objects; use empty Prefix for all objects
+		awsRule.Filter = &s3types.LifecycleRuleFilterMemberPrefix{
+			Value: rule.Prefix,
+		}
+
+		if rule.Expiration != nil && rule.Expiration.Days > 0 {
+			awsRule.Expiration = &s3types.LifecycleExpiration{
+				Days: aws.Int32(rule.Expiration.Days),
+			}
+		}
+
+		if len(rule.Transitions) > 0 {
+			awsRule.Transitions = make([]s3types.Transition, 0, len(rule.Transitions))
+			for _, t := range rule.Transitions {
+				if t.Days <= 0 || t.StorageClass == "" {
+					continue
+				}
+				awsRule.Transitions = append(awsRule.Transitions, s3types.Transition{
+					Days:         aws.Int32(t.Days),
+					StorageClass: s3types.TransitionStorageClass(t.StorageClass),
+				})
+			}
+		}
+
+		if rule.NoncurrentVersionExpiration != nil && rule.NoncurrentVersionExpiration.Days > 0 {
+			awsRule.NoncurrentVersionExpiration = &s3types.NoncurrentVersionExpiration{
+				NoncurrentDays: aws.Int32(rule.NoncurrentVersionExpiration.Days),
+			}
+		}
+
+		if len(rule.NoncurrentVersionTransitions) > 0 {
+			awsRule.NoncurrentVersionTransitions = make([]s3types.NoncurrentVersionTransition, 0, len(rule.NoncurrentVersionTransitions))
+			for _, t := range rule.NoncurrentVersionTransitions {
+				if t.Days <= 0 || t.StorageClass == "" {
+					continue
+				}
+				awsRule.NoncurrentVersionTransitions = append(awsRule.NoncurrentVersionTransitions, s3types.NoncurrentVersionTransition{
+					NoncurrentDays: aws.Int32(t.Days),
+					StorageClass:   s3types.TransitionStorageClass(t.StorageClass),
+				})
+			}
+		}
+
+		rules = append(rules, awsRule)
+	}
+
+	input := &s3.PutBucketLifecycleConfigurationInput{
+		Bucket: aws.String(s3bkt.Spec.Name),
+		LifecycleConfiguration: &s3types.BucketLifecycleConfiguration{
+			Rules: rules,
+		},
+	}
+	_, err = s3Client.PutBucketLifecycleConfiguration(ctx, input)
+	if err != nil {
+		return fmt.Errorf("PutBucketLifecycleConfiguration failed: %w", err)
+	}
 	return nil
 }
 
@@ -211,18 +338,57 @@ func (r *S3BucketReconciler) updateBucketStatus(ctx context.Context, s3bkt *s3v1
 
 // createS3Bucket creates the S3 bucket using AWS SDK v2
 func (r *S3BucketReconciler) createS3Bucket(
+	s3Client *s3.Client,
 	ctx context.Context,
 	s3bkt *s3v1alpha1.S3Bucket,
 ) (string, error) {
 	log := logf.FromContext(ctx)
 	log.Info("Creating S3 bucket", "BucketName", s3bkt.Spec.Name)
 
-	output, err := r.S3svc.CreateBucket(ctx, &s3.CreateBucketInput{
+	region := s3bkt.Spec.Region
+	if region == "" {
+		region = "us-west-2" // Default/fallback region
+		log.Info("No region specified in S3Bucket spec, using default", "region", region)
+	}
+
+	// client is now passed in
+
+	input := &s3.CreateBucketInput{
 		Bucket:                     aws.String(s3bkt.Spec.Name),
 		ObjectLockEnabledForBucket: aws.Bool(s3bkt.Spec.Locked),
-	})
-	if err != nil {
-		return "", fmt.Errorf("S3 CreateBucket API call failed: %w", err)
+	}
+	// Set LocationConstraint for non-us-east-1 regions
+	if region != "us-east-1" {
+		input.CreateBucketConfiguration = &s3types.CreateBucketConfiguration{
+			LocationConstraint: s3types.BucketLocationConstraint(region),
+		}
+	}
+
+	log.Info("Attempting CreateBucket", "bucket", s3bkt.Spec.Name, "region", region)
+
+	var output *s3.CreateBucketOutput
+	var createErr error
+	maxAttempts := 5
+	for attempt := 0; attempt < maxAttempts; attempt++ {
+		output, createErr = s3Client.CreateBucket(ctx, input)
+		if createErr == nil {
+			log.Info("S3 bucket created", "bucket", s3bkt.Spec.Name)
+			break
+		}
+
+		errStr := createErr.Error()
+		if strings.Contains(errStr, "OperationAborted") || strings.Contains(errStr, "BucketAlreadyExists") {
+			log.Info("Retrying bucket creation", "attempt", attempt+1, "error", createErr)
+			time.Sleep(time.Duration(1<<attempt) * time.Second) // Exponential backoff
+			continue
+		}
+
+		// Non-retryable error
+		return "", fmt.Errorf("failed to create S3 bucket: %w", createErr)
+	}
+
+	if createErr != nil {
+		return "", fmt.Errorf("S3 CreateBucket API call failed after retries: %w", createErr)
 	}
 
 	// Extract the location from the response
@@ -234,13 +400,15 @@ func (r *S3BucketReconciler) createS3Bucket(
 }
 
 // waitForBucketReady waits until the bucket exists and is ready
-func (r *S3BucketReconciler) waitForBucketReady(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
+func (r *S3BucketReconciler) waitForBucketReady(s3Client *s3.Client, ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
 	log := logf.FromContext(ctx)
 	log.Info("Waiting for bucket to be ready", "BucketName", s3bkt.Spec.Name)
 
 	// Use a simple poll loop to wait for the bucket
+	// client is now passed in
+
 	for i := 0; i < 60; i++ {
-		_, err := r.S3svc.HeadBucket(ctx, &s3.HeadBucketInput{
+		_, err := s3Client.HeadBucket(ctx, &s3.HeadBucketInput{
 			Bucket: aws.String(s3bkt.Spec.Name),
 		})
 		if err == nil {
@@ -284,7 +452,7 @@ func (r *S3BucketReconciler) createBucketConfigMap(ctx context.Context, s3bkt *s
 }
 
 // DeleteResource handles the complete deletion flow including finalizer management
-func (r *S3BucketReconciler) DeleteResource(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
+func (r *S3BucketReconciler) DeleteResource(s3Client *s3.Client, ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
 	log := logf.FromContext(ctx)
 	log.Info("Starting deletion of S3 Bucket", "BucketName", s3bkt.Spec.Name)
 
@@ -301,7 +469,7 @@ func (r *S3BucketReconciler) DeleteResource(ctx context.Context, s3bkt *s3v1alph
 	}
 
 	// Perform the actual cleanup operations
-	if err := r.performCleanup(ctx, s3bkt); err != nil {
+	if err := r.performCleanup(s3Client, ctx, s3bkt); err != nil {
 		if err := r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE); err != nil {
 			log.Error(err, "Failed to update status to ERROR")
 		}
@@ -318,14 +486,14 @@ func (r *S3BucketReconciler) DeleteResource(ctx context.Context, s3bkt *s3v1alph
 }
 
 // performCleanup performs all cleanup operations (S3 bucket, ConfigMap, etc.)
-func (r *S3BucketReconciler) performCleanup(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
+func (r *S3BucketReconciler) performCleanup(s3Client *s3.Client, ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
 	// Delete the S3 bucket
-	if err := r.deleteS3Bucket(ctx, s3bkt); err != nil {
+	if err := r.deleteS3Bucket(s3Client, ctx, s3bkt); err != nil {
 		return fmt.Errorf("failed to delete S3 bucket: %w", err)
 	}
 
 	// Wait for bucket to be fully deleted
-	if err := r.waitForBucketDeleted(ctx, s3bkt); err != nil {
+	if err := r.waitForBucketDeleted(s3Client, ctx, s3bkt); err != nil {
 		return fmt.Errorf("bucket deletion timeout: %w", err)
 	}
 
@@ -378,30 +546,24 @@ func (r *S3BucketReconciler) addFinalizer(ctx context.Context, s3bkt *s3v1alpha1
 }
 
 // deleteS3Bucket deletes the S3 bucket using AWS SDK v2
-func (r *S3BucketReconciler) deleteS3Bucket(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
+func (r *S3BucketReconciler) deleteS3Bucket(s3Client *s3.Client, ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
 	log := logf.FromContext(ctx)
 	log.Info("Deleting S3 bucket", "BucketName", s3bkt.Spec.Name)
 
-	_, err := r.S3svc.DeleteBucket(ctx, &s3.DeleteBucketInput{
+	_, err := s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
 		Bucket: aws.String(s3bkt.Spec.Name),
 	})
 	if err != nil {
-		var apiErr any
-		if err != nil {
-			apiErr = err.Error()
-		}
-		// Check if bucket doesn't exist (already deleted) or other S3 errors
-		if err != nil {
-			errStr := err.Error()
-			if errStr == "NoSuchBucket" || errStr == "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" {
+		var apiErr smithy.APIError
+		if errors.As(err, &apiErr) {
+			if apiErr.ErrorCode() == "NoSuchBucket" {
 				log.Info("Bucket already deleted or doesn't exist", "BucketName", s3bkt.Spec.Name)
 				return nil
 			}
-			if errStr == "BucketNotEmpty" {
+			if apiErr.ErrorCode() == "BucketNotEmpty" {
 				return fmt.Errorf("bucket is not empty, cannot delete: %w", err)
 			}
 		}
-		_ = apiErr
 		return fmt.Errorf("S3 DeleteBucket API call failed: %w", err)
 	}
 
@@ -409,17 +571,16 @@ func (r *S3BucketReconciler) deleteS3Bucket(ctx context.Context, s3bkt *s3v1alph
 }
 
 // waitForBucketDeleted waits until the bucket is fully deleted
-func (r *S3BucketReconciler) waitForBucketDeleted(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
+func (r *S3BucketReconciler) waitForBucketDeleted(s3Client *s3.Client, ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) error {
 	log := logf.FromContext(ctx)
 	log.Info("Waiting for bucket to be deleted", "BucketName", s3bkt.Spec.Name)
 
 	// Use a poll loop to wait for the bucket to be deleted
 	for i := 0; i < 60; i++ {
-		_, err := r.S3svc.HeadBucket(ctx, &s3.HeadBucketInput{
+		_, err := s3Client.HeadBucket(ctx, &s3.HeadBucketInput{
 			Bucket: aws.String(s3bkt.Spec.Name),
 		})
 		if err != nil {
-			// Bucket doesn't exist - deletion is complete
 			log.Info("Bucket has been deleted", "BucketName", s3bkt.Spec.Name)
 			return nil
 		}

@@ -1,0 +1,9 @@
+apiVersion: s3.acme.io/v1alpha1
+kind: S3Bucket
+metadata:
+  name: my-test-bucket
+  namespace: kube-s3-operator
+spec:
+  name: my-unique-bucket-name-123456
+  region: eu-west-2
+  locked: false

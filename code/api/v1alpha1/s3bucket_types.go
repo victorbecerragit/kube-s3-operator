@@ -50,6 +50,59 @@ type S3BucketSpec struct {
 
 	// Locked indicates if the bucket is locked for deletion
 	Locked bool `json:"locked,omitempty"` // omitempty is used to avoid issues with Terraform when the field is not set, but it is required for the API
+
+	// Lifecycle is the desired lifecycle configuration for the bucket.
+	// If nil or empty, no lifecycle configuration is applied.
+	Lifecycle *S3BucketLifecycleConfiguration `json:"lifecycle,omitempty"`
+}
+
+// S3BucketLifecycleConfiguration models a subset of AWS S3 LifecycleConfiguration.
+// It intentionally supports the most common rule settings (prefix filter, transitions, and expiration by days).
+type S3BucketLifecycleConfiguration struct {
+	// Rules is the list of lifecycle rules applied to the bucket.
+	Rules []S3BucketLifecycleRule `json:"rules,omitempty"`
+}
+
+// S3BucketLifecycleRule models a subset of AWS S3 LifecycleRule.
+type S3BucketLifecycleRule struct {
+	// ID is an identifier for the rule.
+	ID string `json:"id,omitempty"`
+
+	// Status indicates whether the rule is enabled or disabled ("Enabled" or "Disabled").
+	Status string `json:"status,omitempty"`
+
+	// Prefix limits the rule to objects that start with this prefix.
+	// If empty, the rule applies to all objects.
+	Prefix string `json:"prefix,omitempty"`
+
+	// Expiration configures when to delete objects.
+	Expiration *S3BucketLifecycleExpiration `json:"expiration,omitempty"`
+
+	// Transitions configures storage-class transitions for current object versions.
+	Transitions []S3BucketLifecycleTransition `json:"transitions,omitempty"`
+
+	// NoncurrentVersionExpiration configures when to delete non-current object versions.
+	NoncurrentVersionExpiration *S3BucketLifecycleExpiration `json:"noncurrentVersionExpiration,omitempty"`
+
+	// NoncurrentVersionTransitions configures storage-class transitions for non-current object versions.
+	NoncurrentVersionTransitions []S3BucketLifecycleTransition `json:"noncurrentVersionTransitions,omitempty"`
+}
+
+// S3BucketLifecycleExpiration models expiration settings supported by this operator.
+type S3BucketLifecycleExpiration struct {
+	// Days specifies the number of days after creation when objects are deleted.
+	// If 0, expiration is omitted.
+	Days int32 `json:"days,omitempty"`
+}
+
+// S3BucketLifecycleTransition models a storage-class transition supported by this operator.
+type S3BucketLifecycleTransition struct {
+	// Days specifies the number of days after creation when the transition occurs.
+	// If 0, the transition is omitted.
+	Days int32 `json:"days,omitempty"`
+
+	// StorageClass is the destination storage class (e.g., "STANDARD_IA", "GLACIER").
+	StorageClass string `json:"storageClass,omitempty"`
 }
 
 // S3BucketStatus defines the observed state of S3Bucket.

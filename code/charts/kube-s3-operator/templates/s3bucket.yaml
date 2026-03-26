@@ -1,0 +1,36 @@
+{{- if .Values.s3buckets }}
+{{- range $i, $bucket := .Values.s3buckets }}
+---
+apiVersion: s3.acme.io/v1alpha1
+kind: S3Bucket
+metadata:
+  name: {{ $bucket.name }}
+  namespace: {{ $bucket.namespace | default "kube-s3-operator" }}
+spec:
+  name: {{ $bucket.spec.name }}
+  region: {{ $bucket.spec.region }}
+  locked: {{ $bucket.spec.locked | default false }}
+  {{- if $bucket.spec.lifecycle }}
+  lifecycle:
+    rules:
+    {{- range $rule := $bucket.spec.lifecycle.rules }}
+      - id: {{ $rule.id }}
+        status: {{ $rule.status }}
+        {{- if $rule.prefix }}
+        prefix: {{ $rule.prefix }}
+        {{- end }}
+        {{- if $rule.expiration }}
+        expiration:
+          days: {{ $rule.expiration.days }}
+        {{- end }}
+        {{- if $rule.transitions }}
+        transitions:
+        {{- range $t := $rule.transitions }}
+          - days: {{ $t.days }}
+            storageClass: {{ $t.storageClass }}
+        {{- end }}
+        {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,34 @@
+# AWS Configuration
+awsCredentials:
+  enabled: true
+  # Secret name containing AWS credentials
+  secretName: aws-secret
+  # Secret keys for AWS credentials
+  accessKeyIdKey: aws-access-key-id
+  secretAccessKeyKey: aws-secret-access-key
+  # Provide your AWS credentials here to have Helm create the secret
+  accessKeyId: REDACTED
+  secretAccessKey: REDACTED
+# values-sample.yaml for kube-s3-operator Helm chart
+# This sample demonstrates how to deploy an S3Bucket with lifecycle policies via Helm values.
+
+s3buckets:
+  - name: test-lifecycle-bucket
+    namespace: kube-s3-operator
+    spec:
+      name: demo-bucket-k3-operator
+      region: eu-west-2
+      lifecycle:
+        rules:
+          - id: expire-old-objects
+            status: Enabled
+            expiration:
+              days: 30
+            prefix: "logs/"
+          - id: transition-to-glacier
+            status: Enabled
+            transitions:
+              - days: 60
+                storageClass: GLACIER
+            prefix: "archive/"
+      locked: false

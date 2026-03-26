@@ -10,18 +10,12 @@ on:
       - develop
     paths:
       - 'code/**'
-      - '.github/workflows/tests.yml'
-      - 'go.mod'
-      - 'go.sum'
   pull_request:
     branches:
       - main
       - develop
     paths:
       - 'code/**'
-      - '.github/workflows/tests.yml'
-      - 'go.mod'
-      - 'go.sum'
   workflow_dispatch:
 
 concurrency:
@@ -47,7 +41,11 @@ jobs:
 
       - name: Run unit tests
         working-directory: ./code
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
+          echo "Exported AWS credentials from GitHub Secrets."
           echo "Running unit tests..."
           make test
           echo "Unit tests completed successfully!"
