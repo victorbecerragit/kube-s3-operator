@@ -145,6 +145,13 @@ cd code && make test-e2e
 
 ## Recent Updates
 
+### Upcoming Release (Architecture Refactoring)
+- **Modular Architecture**: Extracted AWS SDK operations into a dedicated `s3client` package, achieving strict separation of concerns from the K8s reconciler.
+- **Performance Optimization**: Implemented a thread-safe `BucketManager` that caches AWS clients per-region, preventing redundant initialization/config loads on every reconcile loop.
+- **Idiomatic Kubernetes Reconciliation**: Eliminated blocking `time.Sleep` wait loops from the reconciler, substituting them with non-blocking `RequeueAfter` polls to prevent worker thread starvation.
+- **Enhanced Reliability**: Reworked ConfigMap lifecycle routines to rely on `controllerutil.CreateOrUpdate` for flawless idempotent state syncing.
+- **Accelerated Testing**: Substituted live AWS dependencies with a complete mock memory client (`mockBucketManager`) within the suite, drastically increasing test velocity and guaranteeing test stability without actual credentials.
+
 ### Latest Release (v2.0.0)
 - **AWS SDK Migration**: Upgraded from AWS SDK v1 (EOL: July 31, 2025) to AWS SDK v2
 - **Optional AWS Credentials**: Helm chart now supports both explicit K8s secrets (`awsCredentials.enabled=true`) and AWS default credential chain — IAM roles, IRSA for EKS (`awsCredentials.enabled=false`, default)
