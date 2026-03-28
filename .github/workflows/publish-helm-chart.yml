@@ -141,14 +141,21 @@ jobs:
       run: |
         echo "📝 Updating Helm repository index"
         
+        # Fetch gh-pages branch to access existing index.yaml
+        git fetch origin gh-pages --depth=1 2>/dev/null || echo "ℹ️ gh-pages branch may not exist yet"
+        
         # Fetch existing index.yaml from gh-pages to merge with new version
         if git rev-parse --verify origin/gh-pages &>/dev/null; then
-          echo "Fetching existing index.yaml to merge releases"
-          git show origin/gh-pages:index.yaml > .deploy/index-old.yaml 2>/dev/null || true
+          if git cat-file -e origin/gh-pages:index.yaml 2>/dev/null; then
+            echo "Fetching existing index.yaml to merge releases"
+            git show origin/gh-pages:index.yaml > .deploy/index-old.yaml
+          else
+            echo "ℹ️ index.yaml not found on gh-pages, will create new index"
+          fi
         fi
         
         # Generate new index, merging with existing if available
-        if [ -f .deploy/index-old.yaml ]; then
+        if [ -s .deploy/index-old.yaml ]; then
           helm repo index .deploy \
             --url https://victorbecerragit.github.io/kube-s3-operator \
             --merge .deploy/index-old.yaml

@@ -7,14 +7,14 @@ awsCredentials:
   accessKeyIdKey: aws-access-key-id
   secretAccessKeyKey: aws-secret-access-key
   # Provide your AWS credentials here to have Helm create the secret
-  accessKeyId: REDACTED
-  secretAccessKey: REDACTED
+  accessKeyId: dummy-key
+  secretAccessKey: dummy-secret
 # values-sample.yaml for kube-s3-operator Helm chart
 # This sample demonstrates how to deploy an S3Bucket with lifecycle policies via Helm values.
 
 s3buckets:
   - name: test-lifecycle-bucket
-    namespace: kube-s3-operator
+    namespace: s3-isolated
     spec:
       name: demo-bucket-k3-operator
       region: eu-west-2

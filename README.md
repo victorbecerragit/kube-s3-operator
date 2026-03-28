@@ -31,13 +31,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-03-26 (UTC)
+Last updated: 2026-03-28 (UTC)
 
-- [Centralize Amazon S3, Wasabi, and Cloudflare R2 with ...](https://rcloneview.com/support/blog/centralize-s3-wasabi-cloudflare-r2-with-rcloneview) — Unify and manage all your S3-compatible cloud storage—Amazon S3, Wasabi, and Cloudflare R2—through one intuitive GUI.
 - [Super Slurper now supports migrations from all S3- ...](https://developers.cloudflare.com/changelog/post/2025-02-24-r2-super-slurper-s3-compatible-support/) — Super Slurper can now migrate data from any S3-compatible object storage provider to Cloudflare R2. This includes transfers from services ...
-- [Cloudflare Announces R2 Storage; Rapid and Reliable S3- ...](https://www.cloudflare.com/press/press-releases/2021/cloudflare-announces-r2-storage/) — Cloudflare announced Cloudflare R2 Storage, a better way for developers to store everything they need with automatic migration of data from ...
-- [Choosing the Right S3 Alternatives for Artifact Storage](https://blog.inedo.com/proget/s3-alternatives) — Cloud and on-premises S3-compatible providers like Cloudflare R2, Wasabi, Backblaze B2, and MinIO let teams reduce storage expenses, eliminate ...
-- [The Guide to Seamless and Version-Safe Migration to Ceph](https://www.clyso.com/eu/en/news/addressing-minio-licensing-changes-the-guide-to-seamless-and-version-safe-migration-to-ceph) — The Guide to Moving from MinIO to Sovereign Ceph RGW Object Storage without losing a single version history. Clyso Author. Kristina Seel. Dec 2, 2025 • ...
+- [Centralize Amazon S3, Wasabi, and Cloudflare R2 with ...](https://rcloneview.com/support/blog/centralize-s3-wasabi-cloudflare-r2-with-rcloneview) — Unify and manage all your S3-compatible cloud storage—Amazon S3, Wasabi, and Cloudflare R2—through one intuitive GUI.
+- [S3 Compatible Object Storage Solutions](https://www.cloudflare.com/developer-platform/solutions/s3-compatible-object-storage/) — Cloudflare R2 is compatible with S3. R2's S3-compatible API allows developers to access a wide range of S3 tools, libraries, and extensions.
+- [10 Best Object Storage Solutions for Cloud Data in 2025](https://www.digitalocean.com/resources/articles/object-storage-solutions-cloud-data) — Cloudflare R2 eliminates bandwidth costs at $0.015/GB/month for high-traffic applications. What are the top S3-compatible object storage options ...
+- [Best S3-Compatible Storage Providers: Top 5 Options in ...](https://cloudian.com/guides/s3-storage/best-s3-compatible-storage-providers-top-5-options-in-2026/) — Notable S3-Compatible Storage Providers · 1. Cloudian HyperStore · 2. Wasabi Hot Cloud Storage · 3. Backblaze B2 Cloud Storage · 4. MinIO · 5. Ceph.
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
@@ -144,6 +144,13 @@ cd code && make test-e2e
 ```
 
 ## Recent Updates
+
+### Upcoming Release (Architecture Refactoring)
+- **Modular Architecture**: Extracted AWS SDK operations into a dedicated `s3client` package, achieving strict separation of concerns from the K8s reconciler.
+- **Performance Optimization**: Implemented a thread-safe `BucketManager` that caches AWS clients per-region, preventing redundant initialization/config loads on every reconcile loop.
+- **Idiomatic Kubernetes Reconciliation**: Eliminated blocking `time.Sleep` wait loops from the reconciler, substituting them with non-blocking `RequeueAfter` polls to prevent worker thread starvation.
+- **Enhanced Reliability**: Reworked ConfigMap lifecycle routines to rely on `controllerutil.CreateOrUpdate` for flawless idempotent state syncing.
+- **Accelerated Testing**: Substituted live AWS dependencies with a complete mock memory client (`mockBucketManager`) within the suite, drastically increasing test velocity and guaranteeing test stability without actual credentials.
 
 ### Latest Release (v2.0.0)
 - **AWS SDK Migration**: Upgraded from AWS SDK v1 (EOL: July 31, 2025) to AWS SDK v2
