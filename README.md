@@ -152,13 +152,11 @@ cd code && make test-e2e
 - **Enhanced Reliability**: Reworked ConfigMap lifecycle routines to rely on `controllerutil.CreateOrUpdate` for flawless idempotent state syncing.
 - **Accelerated Testing**: Substituted live AWS dependencies with a complete mock memory client (`mockBucketManager`) within the suite, drastically increasing test velocity and guaranteeing test stability without actual credentials.
 
-### Latest Release (v2.0.0)
-- **AWS SDK Migration**: Upgraded from AWS SDK v1 (EOL: July 31, 2025) to AWS SDK v2
-- **Optional AWS Credentials**: Helm chart now supports both explicit K8s secrets (`awsCredentials.enabled=true`) and AWS default credential chain — IAM roles, IRSA for EKS (`awsCredentials.enabled=false`, default)
-- **Go Update**: Bumped to Go 1.25.0 for latest performance and security improvements
-- **Kubernetes Libraries**: Updated to v0.35.1 (k8s.io/api, k8s.io/apimachinery, k8s.io/client-go)
-- **Controller Runtime**: Updated to v0.23.1 for better stability
-- **Testing Framework**: Ginkgo v2.28.1 and Gomega v1.39.0
+### Latest Release (v0.2.6)
+- **AWS SDK Refresh**: Rebased on aws-sdk-go-v2 v1.41.5, including the lifecycle filter fix so controller lifecycle rules continue to compile and reconcile with the newest SDK definitions
+- **Chart + App Version**: Published as Helm `0.2.6` to stay aligned with the controller release train and make the SDK upgrade available to Helm consumers
+- **Go & Kubernetes Compatibility**: Maintains Go 1.25.0 and Kubernetes v0.35.1 compatibility while keeping controller-runtime at v0.23.1
+- **Tests & Tooling**: All existing Ginkgo/Gomega/KUTTL suites continue running in CI with the updated dependencies
 
 ### Version Compatibility Matrix
 

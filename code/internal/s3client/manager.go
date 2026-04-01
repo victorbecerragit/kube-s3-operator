@@ -229,8 +229,9 @@ func (m *defaultManager) ApplyLifecycleConfiguration(ctx context.Context, s3bkt 
 			awsRule.ID = aws.String(fmt.Sprintf("%s-rule-%d", s3bkt.Name, i))
 		}
 
-		awsRule.Filter = &s3types.LifecycleRuleFilterMemberPrefix{
-			Value: rule.Prefix,
+		awsRule.Filter = &s3types.LifecycleRuleFilter{}
+		if rule.Prefix != "" {
+			awsRule.Filter.Prefix = aws.String(rule.Prefix)
 		}
 
 		if rule.Expiration != nil && rule.Expiration.Days > 0 {
