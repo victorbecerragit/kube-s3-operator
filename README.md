@@ -33,11 +33,11 @@ This section is updated weekly from CI to highlight recent S3-compatible storage
 <!-- S3_TRENDS_START -->
 Last updated: 2026-04-13 (UTC)
 
-- [Combine NAS, S3, and Cloudflare R2 in One Workflow](https://rcloneview.com/support/blog/hybrid-cloud-nas-s3-cloudflare-r2-rcloneview) — Bridge your on-prem NAS with S3-compatible clouds and Cloudflare R2 using RcloneView's visual workflows. Why hybrid cloud storage is trending in ...
-- [S3-Compatible Object Storage: The Best Solutions at a ...](https://lowcloud.io/en/blog/s3-compatible-object-storage) — MinIO is the most well-known S3-compatible self-hosted object storage. Written in Go, it is performant and relatively easy to operate. MinIO has ...
+- [Object Storage Comparison 2026: 21 S3 Providers ...](https://mixpeek.com/blog/object-storage-comparison-2026) — Side-by-side comparison of 21 S3-compatible storage providers — AWS, GCS, Azure, R2, B2, Wasabi, MinIO, and more. Real pricing, escape costs ...
+- [S3 Compatible Object Storage Solutions](https://www.cloudflare.com/developer-platform/use-cases/s3-compatible-object-storage/) — Cloudflare R2 is compatible with S3. R2's S3-compatible API allows developers to access a wide range of S3 tools, libraries, and extensions.
 - [Choosing the Right S3 Alternatives for Artifact Storage](https://blog.inedo.com/proget/s3-alternatives) — Cloud and on-premises S3-compatible providers like Cloudflare R2, Wasabi, Backblaze B2, and MinIO let teams reduce storage expenses, eliminate ...
-- [Super Slurper now supports migrations from all S3- ...](https://developers.cloudflare.com/changelog/post/2025-02-24-r2-super-slurper-s3-compatible-support/) — Super Slurper can now migrate data from any S3-compatible object storage provider to Cloudflare R2. This includes transfers from services ...
-- [Why You Should Consider MinIO Over AWS S3 + How to ...](https://www.reddit.com/r/devops/comments/1kgy054/why_you_should_consider_minio_over_aws_s3_how_to/) — In Part 2, I show how to build your own S3-compatible storage using MinIO and connect to it with a Java Spring Boot client. Think of it as ...
+- [What s3 compatible object store has the mainstream ...](https://www.reddit.com/r/selfhosted/comments/1s6t9rf/what_s3_compatible_object_store_has_the/) — What s3 compatible object store has the mainstream community moved on to from minio ... Minio removed admin features from the web ui in latest ...
+- [S3-Compatible Object Storage: The Best Solutions at a ...](https://lowcloud.io/en/blog/s3-compatible-object-storage) — MinIO is the most well-known S3-compatible self-hosted object storage. Written in Go, it is performant and relatively easy to operate. MinIO has ...
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
@@ -152,13 +152,11 @@ cd code && make test-e2e
 - **Enhanced Reliability**: Reworked ConfigMap lifecycle routines to rely on `controllerutil.CreateOrUpdate` for flawless idempotent state syncing.
 - **Accelerated Testing**: Substituted live AWS dependencies with a complete mock memory client (`mockBucketManager`) within the suite, drastically increasing test velocity and guaranteeing test stability without actual credentials.
 
-### Latest Release (v2.0.0)
-- **AWS SDK Migration**: Upgraded from AWS SDK v1 (EOL: July 31, 2025) to AWS SDK v2
-- **Optional AWS Credentials**: Helm chart now supports both explicit K8s secrets (`awsCredentials.enabled=true`) and AWS default credential chain — IAM roles, IRSA for EKS (`awsCredentials.enabled=false`, default)
-- **Go Update**: Bumped to Go 1.25.0 for latest performance and security improvements
-- **Kubernetes Libraries**: Updated to v0.35.1 (k8s.io/api, k8s.io/apimachinery, k8s.io/client-go)
-- **Controller Runtime**: Updated to v0.23.1 for better stability
-- **Testing Framework**: Ginkgo v2.28.1 and Gomega v1.39.0
+### Latest Release (v0.2.6)
+- **AWS SDK Refresh**: Rebased on aws-sdk-go-v2 v1.41.5, including the lifecycle filter fix so controller lifecycle rules continue to compile and reconcile with the newest SDK definitions
+- **Chart + App Version**: Published as Helm `0.2.6` to stay aligned with the controller release train and make the SDK upgrade available to Helm consumers
+- **Go & Kubernetes Compatibility**: Maintains Go 1.25.0 and Kubernetes v0.35.1 compatibility while keeping controller-runtime at v0.23.1
+- **Tests & Tooling**: All existing Ginkgo/Gomega/KUTTL suites continue running in CI with the updated dependencies
 
 ### Version Compatibility Matrix
 
