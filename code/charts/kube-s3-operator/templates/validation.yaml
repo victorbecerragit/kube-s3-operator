@@ -2,3 +2,9 @@
 {{- fail "Release name 's3-operator' is forbidden. Please use a different release name to avoid conflicts." }}
 {{- end }}
 
+{{- if and .Values.awsCredentials.enabled .Values.awsCredentials.createSecret }}
+{{- if or (empty .Values.awsCredentials.accessKeyId) (empty .Values.awsCredentials.secretAccessKey) }}
+{{- fail "awsCredentials.enabled=true and awsCredentials.createSecret=true require awsCredentials.accessKeyId and awsCredentials.secretAccessKey to be set." }}
+{{- end }}
+{{- end }}
+

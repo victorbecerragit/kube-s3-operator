@@ -1,6 +1,8 @@
 # AWS Configuration
 awsCredentials:
   enabled: true
+  # Set false to use an externally created secret
+  createSecret: true
   # Secret name containing AWS credentials
   secretName: aws-secret
   # Secret keys for AWS credentials
