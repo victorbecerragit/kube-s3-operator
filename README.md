@@ -31,13 +31,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-04-13 (UTC)
+Last updated: 2026-04-14 (UTC)
 
+- [S3-Compatible Object Storage: The Best Solutions at a ...](https://lowcloud.io/en/blog/s3-compatible-object-storage) — MinIO is the most well-known S3-compatible self-hosted object storage. Written in Go, it is performant and relatively easy to operate. MinIO has ...
+- [Best S3-Compatible Storage Providers: Top 5 Options in ...](https://cloudian.com/guides/s3-storage/best-s3-compatible-storage-providers-top-5-options-in-2026/) — Notable S3-Compatible Storage Providers · 1. Cloudian HyperStore · 2. Wasabi Hot Cloud Storage · 3. Backblaze B2 Cloud Storage · 4. MinIO · 5. Ceph.
 - [S3 Compatible Object Storage Solutions](https://www.cloudflare.com/developer-platform/use-cases/s3-compatible-object-storage/) — Cloudflare R2 is compatible with S3. R2's S3-compatible API allows developers to access a wide range of S3 tools, libraries, and extensions.
 - [S3 Compatible Cloud Object Storage Benchmark](https://aimultiple.com/s3-compatible-object-storage) — Compare the best S3 compatible cloud object storage providers and software by pricing, performance, data transfer fees, retrieval time, ...
-- [Best S3-Compatible Storage Providers: Top 5 Options in ...](https://cloudian.com/guides/s3-storage/best-s3-compatible-storage-providers-top-5-options-in-2026/) — Notable S3-Compatible Storage Providers · 1. Cloudian HyperStore · 2. Wasabi Hot Cloud Storage · 3. Backblaze B2 Cloud Storage · 4. MinIO · 5. Ceph.
-- [S3-Compatible Object Storage: The Best Solutions at a ...](https://lowcloud.io/en/blog/s3-compatible-object-storage) — MinIO is the most well-known S3-compatible self-hosted object storage. Written in Go, it is performant and relatively easy to operate. MinIO has ...
-- [Super Slurper now supports migrations from all S3- ...](https://developers.cloudflare.com/changelog/post/2025-02-24-r2-super-slurper-s3-compatible-support/) — Super Slurper can now migrate data from any S3-compatible object storage provider to Cloudflare R2. This includes transfers from services ...
+- [Combine NAS, S3, and Cloudflare R2 in One Workflow](https://rcloneview.com/support/blog/hybrid-cloud-nas-s3-cloudflare-r2-rcloneview) — Bridge your on-prem NAS with S3-compatible clouds and Cloudflare R2 using RcloneView's visual workflows. Why hybrid cloud storage is trending in ...
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
