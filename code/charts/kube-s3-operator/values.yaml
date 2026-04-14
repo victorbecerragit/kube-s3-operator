@@ -12,7 +12,7 @@ controllerManager:
     image:
       repository: victorbecerra/s3-controller
       # Defaults to appVersion from Chart.yaml when empty
-      tag: "latest"
+      tag: "0.2.7"
     imagePullPolicy: IfNotPresent
     resources:
       limits:
