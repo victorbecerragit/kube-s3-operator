@@ -12,11 +12,11 @@ spec:
   locked: false
   lifecycle:
     rules:
-      - id: expire-30-days
+      - id: transition-30-expire-60-days
         status: Enabled
         expiration:
-          days: 30
+          days: 60
         transitions:
-          - days: 7
+          - days: 30
             storageClass: STANDARD_IA
   #accessControl: private

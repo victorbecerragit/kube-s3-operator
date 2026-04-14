@@ -1,6 +1,8 @@
 # AWS Configuration
 awsCredentials:
   enabled: true
+  # Set false to use an externally created secret
+  createSecret: true
   # Secret name containing AWS credentials
   secretName: aws-secret
   # Secret keys for AWS credentials
@@ -28,7 +30,7 @@ s3buckets:
           - id: transition-to-glacier
             status: Enabled
             transitions:
-              - days: 60
+              - days: 30
                 storageClass: GLACIER
             prefix: "archive/"
       locked: false

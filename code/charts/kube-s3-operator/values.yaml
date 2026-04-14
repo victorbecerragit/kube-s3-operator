@@ -34,6 +34,9 @@ controllerManager:
 # The secret must exist in the same namespace before deployment
 awsCredentials:
   enabled: false
+  # When true, Helm will create/manage the credentials secret.
+  # Set to false when you create the secret externally.
+  createSecret: true
   # Secret name containing AWS credentials
   secretName: aws-secret
   # Secret keys for AWS credentials
