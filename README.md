@@ -260,6 +260,39 @@ Key features:
 - ✅ Intelligent index merging for multi-version support
 - ✅ Comprehensive release documentation
 
+## 🤖 AI Skills
+
+This project ships reusable Copilot skills under `.github/skills/`. Each skill is a structured prompt the agent loads automatically when the relevant topic is mentioned.
+
+### Available Skills
+
+| Skill | Trigger keywords | Documentation |
+|-------|-----------------|---------------|
+| [`dependabot-batch-remediation`](.github/skills/dependabot-batch-remediation/SKILL.md) | Dependabot PRs, batch dependency update, integration branch, grpc upgrade, Helm release | [docs/dependency_remediation.md](docs/dependency_remediation.md) |
+| [`kubernetes-architect`](.github/skills/kubernetes-architect/SKILL.md) | K8s architecture, GitOps, ArgoCD, EKS, service mesh, multi-tenancy | — |
+
+### Batching Dependabot PRs — example prompt
+
+When you have several open Dependabot PRs and want to include them all in the next Helm release, paste this into Copilot Chat:
+
+```
+I have N open Dependabot PRs for dependency updates in /code:
+  #<n1> (<pkg> <old>→<new>)          ← low risk (patch/minor)
+  #<n2> (<pkg> <old>→<new>)          ← low risk
+  #<n3> (<pkg> <old>→<new>)          ← HIGH risk (major version jump)
+
+Use the dependabot-batch-remediation skill. Fill the Variables block with
+these PR numbers, then walk me through all 6 phases:
+  1. Create integration branch
+  2. High-risk PR isolation gate
+  3. Merge PRs in risk-ordered sequence
+  4. Build & push operator image
+  5. Helm smoke test in a test namespace
+  6. Merge, bump Chart.yaml/values.yaml, tag and push v<NEXT>
+```
+
+The skill ([`.github/skills/dependabot-batch-remediation/SKILL.md`](.github/skills/dependabot-batch-remediation/SKILL.md)) contains all exact commands parameterised by version, branch name, and image tag. Fill the `Variables` block at the top for your batch and the rest is copy-paste.
+
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.md) for details.
