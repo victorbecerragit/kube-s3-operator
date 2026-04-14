@@ -51,15 +51,33 @@ type S3BucketReconciler struct {
 // +kubebuilder:rbac:groups=s3.acme.io,resources=s3buckets/finalizers,verbs=update
 // +kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 
+// subreconciler is a function that handles one concern of the reconcile loop.
+// Returning a non-zero Result or a non-nil error stops the chain.
+type subreconciler func(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) (ctrl.Result, error)
+
 func (r *S3BucketReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := logf.FromContext(ctx)
 	log.Info("Reconciling S3Bucket", "NamespacedName", req.NamespacedName)
 
 	s3bkt := &s3v1alpha1.S3Bucket{}
-	err := r.Get(ctx, req.NamespacedName, s3bkt)
-	if err != nil {
+	if err := r.Get(ctx, req.NamespacedName, s3bkt); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
+
+	for _, sub := range []subreconciler{
+		r.handleFinalizer,
+		r.reconcileBucket,
+	} {
+		if result, err := sub(ctx, s3bkt); err != nil || !result.IsZero() {
+			return result, err
+		}
+	}
+	return ctrl.Result{}, nil
+}
+
+// handleFinalizer manages finalizer registration and deletion teardown.
+func (r *S3BucketReconciler) handleFinalizer(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) (ctrl.Result, error) {
+	log := logf.FromContext(ctx)
 
 	if !s3bkt.DeletionTimestamp.IsZero() {
 		if controllerutil.ContainsFinalizer(s3bkt, s3BucketFinalizer) {
@@ -76,14 +94,19 @@ func (r *S3BucketReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{Requeue: true}, nil
 	}
 
+	return ctrl.Result{}, nil
+}
+
+// reconcileBucket drives the bucket state machine.
+func (r *S3BucketReconciler) reconcileBucket(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket) (ctrl.Result, error) {
+	log := logf.FromContext(ctx)
+
 	switch s3bkt.Status.State {
 	case "":
 		return r.CreateResource(ctx, s3bkt)
 
 	case s3v1alpha1.CREATED_STATE:
-		// Optional: Drift detection
-		err := r.S3Manager.ApplyLifecycleConfiguration(ctx, s3bkt)
-		if err != nil {
+		if err := r.S3Manager.ApplyLifecycleConfiguration(ctx, s3bkt); err != nil {
 			log.Error(err, "Failed to re-apply lifecycle configuration")
 			if err2 := r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE); err2 != nil {
 				log.Error(err2, "Failed to update status to ERROR")
@@ -96,40 +119,21 @@ func (r *S3BucketReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		log.Info("S3 bucket is in ERROR state", "BucketName", s3bkt.Spec.Name)
 		return ctrl.Result{RequeueAfter: time.Minute * 5}, nil
 
-	case s3v1alpha1.CREATING_STATE, s3v1alpha1.DELETING_STATE:
+	case s3v1alpha1.CREATING_STATE:
 		log.Info("S3 bucket in transitional state", "BucketName", s3bkt.Spec.Name, "State", s3bkt.Status.State)
-
-		// If creating, check if it's ready
-		if s3bkt.Status.State == s3v1alpha1.CREATING_STATE {
-			ready, err := r.S3Manager.IsBucketReady(ctx, s3bkt)
-			if err != nil {
-				r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE)
+		ready, err := r.S3Manager.IsBucketReady(ctx, s3bkt)
+		if err != nil {
+			if err2 := r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE); err2 != nil {
+				log.Error(err2, "Failed to update status to ERROR")
+			}
+			return ctrl.Result{}, err
+		}
+		if ready {
+			if err := r.finalizeCreation(ctx, s3bkt, s3bkt.Status.Location); err != nil {
 				return ctrl.Result{}, err
 			}
-			if ready {
-				// Bucket is ready, finalize creation
-				if err := r.finalizeCreation(ctx, s3bkt, ""); err != nil {
-					return ctrl.Result{}, err
-				}
-				return ctrl.Result{}, nil
-			}
+			return ctrl.Result{}, nil
 		}
-
-		if s3bkt.Status.State == s3v1alpha1.DELETING_STATE {
-			deleted, err := r.S3Manager.IsBucketDeleted(ctx, s3bkt)
-			if err != nil {
-				r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE)
-				return ctrl.Result{}, err
-			}
-			if deleted {
-				r.deleteBucketConfigMap(ctx, s3bkt)
-				if err := r.removeFinalizer(ctx, s3bkt); err != nil {
-					return ctrl.Result{}, err
-				}
-				return ctrl.Result{}, nil
-			}
-		}
-
 		return ctrl.Result{RequeueAfter: time.Second * 10}, nil
 
 	default:
@@ -161,6 +165,7 @@ func (r *S3BucketReconciler) CreateResource(ctx context.Context, s3bkt *s3v1alph
 		r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.ERROR_STATE)
 		return ctrl.Result{}, fmt.Errorf("failed to create S3 bucket: %w", err)
 	}
+	log.Info("S3 bucket API call succeeded", "BucketName", s3bkt.Spec.Name, "Location", location)
 
 	ready, err := r.S3Manager.IsBucketReady(ctx, s3bkt)
 	if err != nil {
@@ -168,9 +173,14 @@ func (r *S3BucketReconciler) CreateResource(ctx context.Context, s3bkt *s3v1alph
 		return ctrl.Result{}, err
 	}
 
-	// If not ready immediately, requeue
+	// If not ready immediately, persist the location and requeue
 	if !ready {
 		log.Info("Bucket not ready yet, requeuing", "BucketName", s3bkt.Spec.Name)
+		if location != "" {
+			if err := r.persistLocation(ctx, s3bkt, location); err != nil {
+				log.Error(err, "Failed to persist bucket location")
+			}
+		}
 		return ctrl.Result{RequeueAfter: time.Second * 5}, nil
 	}
 
@@ -195,11 +205,11 @@ func (r *S3BucketReconciler) finalizeCreation(ctx context.Context, s3bkt *s3v1al
 		return fmt.Errorf("failed to create ConfigMap: %w", err)
 	}
 
-	if err := r.updateBucketStatus(ctx, s3bkt, s3v1alpha1.CREATED_STATE); err != nil {
+	if err := r.updateBucketStatusCreated(ctx, s3bkt, location); err != nil {
 		return fmt.Errorf("failed to update status to CREATED: %w", err)
 	}
 
-	log.Info("S3 Bucket created successfully", "BucketName", s3bkt.Spec.Name)
+	log.Info("S3 Bucket created successfully", "BucketName", s3bkt.Spec.Name, "Location", location)
 	return nil
 }
 
@@ -284,6 +294,35 @@ func (r *S3BucketReconciler) updateBucketStatus(ctx context.Context, s3bkt *s3v1
 		}
 
 		latest.Status.State = state
+		return r.Status().Update(ctx, latest)
+	})
+}
+
+func (r *S3BucketReconciler) updateBucketStatusCreated(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket, location string) error {
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		latest := &s3v1alpha1.S3Bucket{}
+		if err := r.Get(ctx, types.NamespacedName{
+			Name:      s3bkt.Name,
+			Namespace: s3bkt.Namespace,
+		}, latest); err != nil {
+			return err
+		}
+		latest.Status.State = s3v1alpha1.CREATED_STATE
+		latest.Status.Location = location
+		return r.Status().Update(ctx, latest)
+	})
+}
+
+func (r *S3BucketReconciler) persistLocation(ctx context.Context, s3bkt *s3v1alpha1.S3Bucket, location string) error {
+	return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+		latest := &s3v1alpha1.S3Bucket{}
+		if err := r.Get(ctx, types.NamespacedName{
+			Name:      s3bkt.Name,
+			Namespace: s3bkt.Namespace,
+		}, latest); err != nil {
+			return err
+		}
+		latest.Status.Location = location
 		return r.Status().Update(ctx, latest)
 	})
 }
