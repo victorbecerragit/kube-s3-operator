@@ -303,6 +303,6 @@ This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENS
 
 ## Acknowledgments
 
-Based on the LinkedIn course "Extending Kubernetes with Operator Patterns" by Frank P Moley
+inspired from 2022 LinkedIn course "Extending Kubernetes with Operator Patterns" by Frank P Moley
 
 
