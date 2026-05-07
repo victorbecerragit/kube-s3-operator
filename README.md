@@ -7,6 +7,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Release](https://img.shields.io/github/release/victorbecerragit/kube-s3-operator.svg)](https://github.com/victorbecerragit/kube-s3-operator/releases)
 [![Tests](https://github.com/victorbecerragit/kube-s3-operator/actions/workflows/tests.yml/badge.svg)](https://github.com/victorbecerragit/kube-s3-operator/actions/workflows/tests.yml)
+[![Docker Hub](https://img.shields.io/docker/pulls/victorbecerra/kube-s3-controller?logo=docker&logoColor=white)](https://hub.docker.com/r/victorbecerra/kube-s3-controller)
 
 A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resources.
 
