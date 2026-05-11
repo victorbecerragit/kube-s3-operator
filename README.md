@@ -32,13 +32,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-05-04 (UTC)
+Last updated: 2026-05-11 (UTC)
 
 - [Best S3-Compatible Object Storage Providers (2026 ...](https://lowcloud.io/en/blog/s3-compatible-object-storage) — Compare the best S3-compatible object storage solutions in 2026: MinIO, Cloudflare R2, Hetzner, Backblaze B2, Wasabi, Garage, Ceph and more ...
+- [S3 Compatible Object Storage Solutions](https://www.cloudflare.com/developer-platform/use-cases/s3-compatible-object-storage/) — Object storage solutions compatible with S3 offer flexibility and cost savings. Learn what to look for in S3 compatible object storage solutions.
+- [Best S3-Compatible Storage Providers: Top 5 Options in ...](https://cloudian.com/guides/s3-storage/best-s3-compatible-storage-providers-top-5-options-in-2026/) — Notable S3-Compatible Storage Providers · 1. Cloudian HyperStore · 2. Wasabi Hot Cloud Storage · 3. Backblaze B2 Cloud Storage · 4. MinIO · 5. Ceph.
 - [MinIO vs Cloudflare R2: Best S3-Compatible Storage](https://startupik.com/minio-vs-cloudflare-r2-best-s3-compatible-storage/) — Both MinIO and Cloudflare R2 are S3-compatible, making them viable alternatives or complements to Amazon S3. MinIO is best when you need self- ...
-- [AWS, Wasabi, Cloudflare, and Backblaze go head-to- ...](https://www.helpnetsecurity.com/2026/04/03/backblaze-cloud-storage-benchmark-2026/) — Backblaze's Q1 2026 cloud storage benchmark tests B2, AWS S3, Cloudflare R2, and Wasabi across zones, with methodology and rate limit data.
-- [S3 Compatible Object Storage Solutions](https://www.cloudflare.com/developer-platform/use-cases/s3-compatible-object-storage/) — Cloudflare R2 is compatible with S3. R2's S3-compatible API allows developers to access a wide range of S3 tools, libraries, and extensions.
-- [Vision AI for Wasabi, Backblaze B2, Cloudflare R2, and more](https://blog.roboflow.com/batch-processing-for-s3-compatible-storage/) — Today we're announcing that Roboflow Batch Processing integrates with the wider ecosystem of S3-compatible storage providers.
+- [Super Slurper now supports migrations from all S3- ...](https://developers.cloudflare.com/changelog/post/2025-02-24-r2-super-slurper-s3-compatible-support/) — Super Slurper can now migrate data from any S3-compatible object storage provider to Cloudflare R2. This includes transfers from services ...
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
