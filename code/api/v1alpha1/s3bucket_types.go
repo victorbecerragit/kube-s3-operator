@@ -107,7 +107,8 @@ type S3BucketLifecycleTransition struct {
 
 // S3BucketStatus defines the observed state of S3Bucket.
 type S3BucketStatus struct {
-	State string `json:"state,omitempty"`
+	State    string `json:"state,omitempty"`
+	Location string `json:"location,omitempty"`
 }
 
 // +kubebuilder:object:root=true

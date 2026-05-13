@@ -1,9 +1,10 @@
+---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: s3buckets.s3.acme.io
   annotations:
     controller-gen.kubebuilder.io/version: v0.18.0
+  name: s3buckets.s3.acme.io
 spec:
   group: s3.acme.io
   names:
@@ -51,76 +52,98 @@ spec:
           spec:
             description: S3BucketSpec defines the desired state of S3Bucket.
             properties:
+              lifecycle:
+                description: |-
+                  Lifecycle is the desired lifecycle configuration for the bucket.
+                  If nil or empty, no lifecycle configuration is applied.
+                properties:
+                  rules:
+                    description: Rules is the list of lifecycle rules applied to the
+                      bucket.
+                    items:
+                      description: S3BucketLifecycleRule models a subset of AWS S3
+                        LifecycleRule.
+                      properties:
+                        expiration:
+                          description: Expiration configures when to delete objects.
+                          properties:
+                            days:
+                              description: |-
+                                Days specifies the number of days after creation when objects are deleted.
+                                If 0, expiration is omitted.
+                              format: int32
+                              type: integer
+                          type: object
+                        id:
+                          description: ID is an identifier for the rule.
+                          type: string
+                        noncurrentVersionExpiration:
+                          description: NoncurrentVersionExpiration configures when
+                            to delete non-current object versions.
+                          properties:
+                            days:
+                              description: |-
+                                Days specifies the number of days after creation when objects are deleted.
+                                If 0, expiration is omitted.
+                              format: int32
+                              type: integer
+                          type: object
+                        noncurrentVersionTransitions:
+                          description: NoncurrentVersionTransitions configures storage-class
+                            transitions for non-current object versions.
+                          items:
+                            description: S3BucketLifecycleTransition models a storage-class
+                              transition supported by this operator.
+                            properties:
+                              days:
+                                description: |-
+                                  Days specifies the number of days after creation when the transition occurs.
+                                  If 0, the transition is omitted.
+                                format: int32
+                                type: integer
+                              storageClass:
+                                description: StorageClass is the destination storage
+                                  class (e.g., "STANDARD_IA", "GLACIER").
+                                type: string
+                            type: object
+                          type: array
+                        prefix:
+                          description: |-
+                            Prefix limits the rule to objects that start with this prefix.
+                            If empty, the rule applies to all objects.
+                          type: string
+                        status:
+                          description: Status indicates whether the rule is enabled
+                            or disabled ("Enabled" or "Disabled").
+                          type: string
+                        transitions:
+                          description: Transitions configures storage-class transitions
+                            for current object versions.
+                          items:
+                            description: S3BucketLifecycleTransition models a storage-class
+                              transition supported by this operator.
+                            properties:
+                              days:
+                                description: |-
+                                  Days specifies the number of days after creation when the transition occurs.
+                                  If 0, the transition is omitted.
+                                format: int32
+                                type: integer
+                              storageClass:
+                                description: StorageClass is the destination storage
+                                  class (e.g., "STANDARD_IA", "GLACIER").
+                                type: string
+                            type: object
+                          type: array
+                      type: object
+                    type: array
+                type: object
               locked:
                 description: Locked indicates if the bucket is locked for deletion
                 type: boolean
               name:
                 description: Name is the name of the S3 bucket
                 type: string
-              lifecycle:
-                description: Lifecycle is the desired lifecycle configuration for the bucket.
-                nullable: true
-                type: object
-                properties:
-                  rules:
-                    description: Rules is the list of lifecycle rules applied to the bucket.
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          description: ID is an identifier for the rule.
-                          type: string
-                        status:
-                          description: Status indicates whether the rule is enabled or disabled ("Enabled" or "Disabled").
-                          type: string
-                        prefix:
-                          description: Prefix limits the rule to objects that start with this prefix.
-                          type: string
-                        expiration:
-                          description: Expiration configures when to delete objects.
-                          nullable: true
-                          type: object
-                          properties:
-                            days:
-                              description: Days specifies the number of days after creation when objects are deleted.
-                              format: int32
-                              type: integer
-                        transitions:
-                          description: Transitions configures storage-class transitions for current object versions.
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              days:
-                                description: Days specifies the number of days after creation when the transition occurs.
-                                format: int32
-                                type: integer
-                              storageClass:
-                                description: StorageClass is the destination storage class (e.g., "STANDARD_IA", "GLACIER").
-                                type: string
-                        noncurrentVersionExpiration:
-                          description: NoncurrentVersionExpiration configures when to delete non-current object versions.
-                          nullable: true
-                          type: object
-                          properties:
-                            days:
-                              description: Days specifies the number of days after creation when objects are deleted.
-                              format: int32
-                              type: integer
-                        noncurrentVersionTransitions:
-                          description: NoncurrentVersionTransitions configures storage-class transitions for non-current object versions.
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              days:
-                                description: Days specifies the number of days after creation when the transition occurs.
-                                format: int32
-                                type: integer
-                              storageClass:
-                                description: StorageClass is the destination storage class (e.g., "STANDARD_IA", "GLACIER").
-                                type: string
               region:
                 description: Region is the AWS region where the bucket will be created
                 type: string
@@ -128,6 +151,8 @@ spec:
           status:
             description: S3BucketStatus defines the observed state of S3Bucket.
             properties:
+              location:
+                type: string
               state:
                 type: string
             type: object
@@ -136,9 +161,3 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
