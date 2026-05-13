@@ -173,10 +173,10 @@ pr-check-summary
 ### Go Module Caching
 
 ```yaml
-- uses: actions/cache@v4
+- uses: actions/setup-go@v5
   with:
-    path: ~/go/pkg/mod
-    key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+    go-version: '1.25.0'
+    cache: true
 ```
 
 **Performance Impact:**

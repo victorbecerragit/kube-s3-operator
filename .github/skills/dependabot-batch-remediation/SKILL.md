@@ -50,8 +50,8 @@ GO_MODULE_DIR="code"                           # subdirectory containing go.mod
 
 # ── PR numbers & local branch names (edit per batch) ──────────
 # Format: "pr-<number>-<short-slug>"
-PR_LOW_RISK=("pr-43-smithy-go" "pr-42-aws-config" "pr-44-go-modules-group")
-PR_HIGH_RISK="pr-40-grpc"      # largest version jump; merged last
+PR_LOW_RISK=("pr-53-smithy-go" "pr-56-gomega" "pr-55-ginkgo" "pr-51-aws-s3-group")
+PR_HIGH_RISK="pr-57-k8s-libs-group"   # largest version jump; merged last
 
 # ── Image ──────────────────────────────────────────────────────
 IMG_REPO="victorbecerra/kube-s3-controller"
@@ -75,13 +75,17 @@ cd "${REPO_ROOT}"
 git fetch origin --prune
 
 # Fetch each Dependabot PR head into a local tracking branch
-git fetch origin pull/44/head:pr-44-go-modules-group
-git fetch origin pull/43/head:pr-43-smithy-go
-git fetch origin pull/42/head:pr-42-aws-config
-git fetch origin pull/40/head:pr-40-grpc
+git fetch origin pull/53/head:pr-53-smithy-go
+git fetch origin pull/56/head:pr-56-gomega
+git fetch origin pull/55/head:pr-55-ginkgo
+git fetch origin pull/51/head:pr-51-aws-s3-group
+git fetch origin pull/57/head:pr-57-k8s-libs-group
 
 # Fresh integration branch from main
 git checkout -B "${INTEGRATION_BRANCH}" origin/main
+
+# This batch uses PRs 51, 53, 55, 56, and 57.
+# Merge order is low-risk first, high-risk last.
 ```
 
 ---
@@ -120,15 +124,16 @@ git branch -D "trial/${PR_HIGH_RISK}"
 git checkout "${INTEGRATION_BRANCH}"
 
 # Low-risk first (order: smallest → largest change footprint)
-git merge --no-ff pr-43-smithy-go       -m "merge: PR #43 smithy-go 1.24.2->1.24.3"
-git merge --no-ff pr-42-aws-config      -m "merge: PR #42 aws-sdk-go-v2/config 1.32.13->1.32.14"
-git merge --no-ff pr-44-go-modules-group -m "merge: PR #44 go_modules group bump"
+git merge --no-ff pr-53-smithy-go        -m "merge: PR #53 smithy-go 1.24.3->1.25.1"
+git merge --no-ff pr-56-gomega           -m "merge: PR #56 gomega 1.39.1->1.40.0"
+git merge --no-ff pr-55-ginkgo           -m "merge: PR #55 ginkgo/v2 2.28.1->2.28.3"
+git merge --no-ff pr-51-aws-s3-group     -m "merge: PR #51 aws-s3 group bump"
 
 # Baseline validation at mid-point
 cd "${GO_MODULE_DIR}" && go mod tidy && go test ./... && cd "${REPO_ROOT}"
 
 # High-risk last
-git merge --no-ff pr-40-grpc -m "merge: PR #40 grpc 1.72.2->1.79.3"
+git merge --no-ff pr-57-k8s-libs-group -m "merge: PR #57 k8s-libs group bump"
 
 # Final tidy after all merges
 cd "${GO_MODULE_DIR}" && go mod tidy && cd "${REPO_ROOT}"
@@ -224,15 +229,16 @@ kubectl -n "${TEST_NS}" logs "${DEPLOY}" --since=10m \
 
 ### 6a. Merge Dependabot PRs on GitHub
 
-Preferred: merge the integration PR → close the 4 Dependabot PRs as "superseded".
+Preferred: merge the integration PR -> close the 5 Dependabot PRs as "superseded".
 
 If policy requires individual merges, use this order (least → most risk):
 
 ```bash
-gh pr merge 43 --squash --delete-branch
-gh pr merge 42 --squash --delete-branch
-gh pr merge 44 --squash --delete-branch
-gh pr merge 40 --squash --delete-branch   # high-risk last
+gh pr merge 53 --squash --delete-branch
+gh pr merge 56 --squash --delete-branch
+gh pr merge 55 --squash --delete-branch
+gh pr merge 51 --squash --delete-branch
+gh pr merge 57 --squash --delete-branch   # high-risk last
 ```
 
 ### 6b. Bump Helm chart version on `main`
@@ -282,7 +288,7 @@ git push origin "v${NEXT_VERSION}"
 
 | Scenario | Rollback |
 |----------|---------|
-| Smoke test fails after gRPC merge | `git revert` the grpc merge commit; push; rebuild image without it |
+| Smoke test fails after k8s-libs merge | `git revert` the k8s-libs merge commit; push; rebuild image without it |
 | Helm deploy broken | `helm rollback ${HELM_RELEASE} -n ${TEST_NS}` |
 | `main` already bumped but smoke failed | Revert version bump commit; `git push origin main --force-with-lease` |
 | Image pushed but broken | Re-push previous tag: `docker tag ${IMG_REPO}:prev ${IMG_REPO}:${IMG_TAG} && docker push` |
