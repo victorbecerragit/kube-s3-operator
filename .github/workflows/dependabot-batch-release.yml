@@ -1,0 +1,164 @@
+# This workflow automates batch remediation of Dependabot PRs and Helm chart release
+# for kube-s3-operator, following your manual, blocking, and GitHub Releases-only requirements.
+#
+# Usage:
+# - Trigger manually via GitHub Actions UI (workflow_dispatch)
+# - Input: List of PR numbers to batch (comma-separated)
+# - Blocks on any failure, notifies on error
+# - Keeps the integration branch for inspection
+# - Uploads Helm chart only to GitHub Releases
+
+name: Dependabot Batch Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_numbers:
+        description: 'Comma-separated list of Dependabot PR numbers to batch (e.g. 51,53,55,56,57)'
+        required: true
+        type: string
+
+jobs:
+  batch-remediation:
+    name: Batch Remediation & Helm Release
+    runs-on: ubuntu-latest
+    env:
+      REPO_ROOT: ${{ github.workspace }}
+      GO_MODULE_DIR: code
+      CHART_PATH: ./code/charts/kube-s3-operator
+      IMG_REPO: victorbecerra/kube-s3-controller
+      TEST_NS: s3-operator-smoke
+      HELM_RELEASE: s3-operator-smoke
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: code/go.mod
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.4
+
+      - name: Set up Kind cluster
+        uses: helm/kind-action@v1
+        with:
+          version: v0.23.0
+
+      - name: Parse PR numbers
+        id: parse
+        run: |
+          PRS="${{ github.event.inputs.pr_numbers }}"
+          # Remove spaces, split into array
+          PRS_CLEAN=$(echo "$PRS" | tr -d ' ')
+          echo "prs=$PRS_CLEAN" >> $GITHUB_OUTPUT
+
+      - name: Fetch Dependabot PRs
+        run: |
+          for pr in $(echo "${{ steps.parse.outputs.prs }}" | tr ',' ' '); do
+            git fetch origin pull/$pr/head:pr-$pr
+          done
+
+      - name: Create integration branch
+        run: |
+          git checkout -B release/next-helm-deps origin/main
+
+      - name: Merge PRs (low-risk first, high-risk last)
+        run: |
+          # You may want to customize merge order for risk
+          for pr in $(echo "${{ steps.parse.outputs.prs }}" | tr ',' ' '); do
+            git merge --no-ff pr-$pr -m "merge: PR #$pr"
+          done
+          git push origin release/next-helm-deps
+
+      - name: Go mod tidy & test
+        run: |
+          cd code
+          go mod tidy
+          go test ./...
+
+      - name: Build and push operator image
+        env:
+          IMG_TAG: deps-integration-${{ github.run_id }}
+        run: |
+          cd code
+          make docker-build IMG="${IMG_REPO}:${IMG_TAG}"
+          echo "Pushing image: ${IMG_REPO}:${IMG_TAG}"
+          echo "::add-mask::${{ secrets.DOCKERHUB_TOKEN }}"
+          echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          docker push "${IMG_REPO}:${IMG_TAG}"
+
+      - name: Helm smoke test
+        env:
+          IMG_TAG: deps-integration-${{ github.run_id }}
+        run: |
+          kubectl create namespace $TEST_NS || true
+          # AWS credentials must be set as repo/Org secrets for this step
+          kubectl -n $TEST_NS create secret generic aws-secret \
+            --from-literal=aws-access-key-id=${{ secrets.AWS_ACCESS_KEY_ID }} \
+            --from-literal=aws-secret-access-key=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+          helm upgrade --install $HELM_RELEASE $CHART_PATH \
+            -n $TEST_NS \
+            --set controllerManager.manager.image.repository=$IMG_REPO \
+            --set controllerManager.manager.image.tag=$IMG_TAG \
+            --set awsCredentials.createSecret=false
+          DEPLOY=$(kubectl -n $TEST_NS get deploy -l app.kubernetes.io/name=kube-s3-operator -o name)
+          kubectl -n $TEST_NS rollout status "$DEPLOY" --timeout=180s
+          kubectl -n $TEST_NS logs "$DEPLOY" --tail=200
+
+      - name: Package Helm chart
+        run: |
+          helm package $CHART_PATH --destination .
+          sha256sum kube-s3-operator-*.tgz > helm-chart-sha256.txt
+
+      - name: Create GitHub Release (if not exists)
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.2.8
+          name: Release v0.2.8
+          body: |
+            Batch Dependabot PRs: ${{ github.event.inputs.pr_numbers }}
+            See HELM_RELEASE_v0.2.8.md for details.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Helm chart to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.2.8
+          files: |
+            kube-s3-operator-*.tgz
+            helm-chart-sha256.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify on failure
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "[kube-s3-operator] Batch release failed"
+          to: ${{ secrets.NOTIFY_EMAIL }}
+          body: "Batch remediation workflow failed for PRs: ${{ github.event.inputs.pr_numbers }}. See Actions for details."
+
+      - name: Final status
+        run: echo "Batch remediation and Helm release completed. Integration branch kept for inspection."
