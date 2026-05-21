@@ -94,6 +94,15 @@ jobs:
           set -e
           for pr in $(echo "${{ steps.parse.outputs.prs }}" | tr ',' ' '); do
             if ! git merge --no-ff pr-$pr -m "merge: PR #$pr"; then
+              conflicted_files=$(git diff --name-only --diff-filter=U)
+              if [ "$conflicted_files" = "README.md" ]; then
+                echo "::warning::README.md conflict detected in PR #$pr. Keeping the current branch version and continuing."
+                git checkout --ours README.md
+                git add README.md
+                git commit --no-edit
+                continue
+              fi
+
               echo "::error::Merge conflict detected in PR #$pr. Aborting batch merge."
               echo "::notice::To proceed, rerun the pipeline without PR #$pr (remove it from the batch)."
               git merge --abort
