@@ -124,12 +124,19 @@ jobs:
       - name: Build and push operator image
         env:
           IMG_TAG: deps-integration-${{ github.run_id }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
+          if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_TOKEN" ]; then
+            echo "::error::Missing DockerHub credentials. Set DOCKERHUB_USERNAME and DOCKERHUB_TOKEN secrets in repository or organization settings."
+            exit 1
+          fi
+
           cd code
           make docker-build IMG="${IMG_REPO}:${IMG_TAG}"
           echo "Pushing image: ${IMG_REPO}:${IMG_TAG}"
-          echo "::add-mask::${{ secrets.DOCKERHUB_TOKEN }}"
-          echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          echo "::add-mask::$DOCKERHUB_TOKEN"
+          printf '%s' "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
           docker push "${IMG_REPO}:${IMG_TAG}"
 
       - name: Helm smoke test
@@ -188,6 +195,7 @@ jobs:
           server_port: ${{ secrets.SMTP_PORT }}
           username: ${{ secrets.SMTP_USERNAME }}
           password: ${{ secrets.SMTP_PASSWORD }}
+          from: ${{ secrets.SMTP_FROM || secrets.SMTP_USERNAME }}
           subject: "[kube-s3-operator] Batch release failed"
           to: ${{ secrets.NOTIFY_EMAIL }}
           body: "Batch remediation workflow failed for PRs: ${{ github.event.inputs.pr_numbers }}. See Actions for details."
