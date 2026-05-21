@@ -115,7 +115,11 @@ jobs:
         run: |
           cd code
           go mod tidy
-          go test ./...
+          make setup-envtest
+          export KUBEBUILDER_ASSETS="$(./bin/setup-envtest use $(go list -m -f "{{ .Version }}" k8s.io/api | awk -F'[v.]' '{printf "1.%d", $3}') --bin-dir "$(pwd)/bin" -p path)"
+          echo "Resolved KUBEBUILDER_ASSETS: ${KUBEBUILDER_ASSETS}"
+          ls -la "${KUBEBUILDER_ASSETS}" || true
+          go test $(go list ./... | grep -v /e2e)
 
       - name: Build and push operator image
         env:
