@@ -124,19 +124,19 @@ jobs:
       - name: Build and push operator image
         env:
           IMG_TAG: deps-integration-${{ github.run_id }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
         run: |
-          if [ -z "$DOCKERHUB_USERNAME" ] || [ -z "$DOCKERHUB_TOKEN" ]; then
-            echo "::error::Missing DockerHub credentials. Set DOCKERHUB_USERNAME and DOCKERHUB_TOKEN secrets in repository or organization settings."
+          if [ -z "$DOCKER_USERNAME" ] || [ -z "$DOCKER_HUB_TOKEN" ]; then
+            echo "::error::Missing DockerHub credentials. Set DOCKER_USERNAME and DOCKER_HUB_TOKEN secrets in repository or organization settings."
             exit 1
           fi
 
           cd code
           make docker-build IMG="${IMG_REPO}:${IMG_TAG}"
           echo "Pushing image: ${IMG_REPO}:${IMG_TAG}"
-          echo "::add-mask::$DOCKERHUB_TOKEN"
-          printf '%s' "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+          echo "::add-mask::$DOCKER_HUB_TOKEN"
+          printf '%s' "$DOCKER_HUB_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
           docker push "${IMG_REPO}:${IMG_TAG}"
 
       - name: Helm smoke test
