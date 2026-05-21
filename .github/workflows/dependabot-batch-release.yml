@@ -82,9 +82,14 @@ jobs:
 
       - name: Merge PRs (low-risk first, high-risk last)
         run: |
-          # You may want to customize merge order for risk
+          set -e
           for pr in $(echo "${{ steps.parse.outputs.prs }}" | tr ',' ' '); do
-            git merge --no-ff pr-$pr -m "merge: PR #$pr"
+            if ! git merge --no-ff pr-$pr -m "merge: PR #$pr"; then
+              echo "::error::Merge conflict detected in PR #$pr. Aborting batch merge."
+              echo "::notice::To proceed, rerun the pipeline without PR #$pr (remove it from the batch)."
+              git merge --abort
+              exit 1
+            fi
           done
           git push origin release/next-helm-deps
 
