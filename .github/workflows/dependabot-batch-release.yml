@@ -8,12 +8,6 @@
 # - Keeps the integration branch for inspection
 # - Uploads Helm chart only to GitHub Releases
 
-# This workflow automates batch remediation of Dependabot PRs and Helm chart release
-# for kube-s3-operator, following your manual, blocking, and GitHub Releases-only requirements.
-#
-# Usage:
-# - Trigger manually via GitHub Actions UI (workflow_dispatch)
-# - Input: List of PR numbers to batch (comma-separated)
 name: Dependabot Batch Release
 
 on:
@@ -88,7 +82,12 @@ jobs:
 
       - name: Create integration branch
         run: |
-          git checkout -B release/next-helm-deps origin/main
+          git fetch origin release/next-helm-deps || true
+          if git ls-remote --exit-code --heads origin release/next-helm-deps >/dev/null 2>&1; then
+            git checkout -B release/next-helm-deps origin/release/next-helm-deps
+          else
+            git checkout -B release/next-helm-deps origin/main
+          fi
 
       - name: Merge PRs (low-risk first, high-risk last)
         run: |
@@ -101,7 +100,7 @@ jobs:
               exit 1
             fi
           done
-          git push origin release/next-helm-deps
+          git push --force-with-lease origin release/next-helm-deps
 
       - name: Go mod tidy & test
         run: |
