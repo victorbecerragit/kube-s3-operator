@@ -32,13 +32,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-05-18 (UTC)
+Last updated: 2026-05-21 (UTC)
 
-- [Best S3-Compatible Object Storage Providers (2026 ...](https://lowcloud.io/en/blog/s3-compatible-object-storage) — Compare the best S3-compatible object storage solutions in 2026: MinIO, Cloudflare R2, Hetzner, Backblaze B2, Wasabi, Garage, Ceph and more ...
-- [Best S3-Compatible Storage Providers: Top 5 Options in ...](https://cloudian.com/guides/s3-storage/best-s3-compatible-storage-providers-top-5-options-in-2026/) — Notable S3-Compatible Storage Providers · 1. Cloudian HyperStore · 2. Wasabi Hot Cloud Storage · 3. Backblaze B2 Cloud Storage · 4. MinIO · 5. Ceph.
-- [Object Storage Comparison 2026: 21 S3 Providers ...](https://mixpeek.com/blog/object-storage-comparison-2026) — Side-by-side comparison of 21 S3-compatible storage providers — AWS, GCS, Azure, R2, B2, Wasabi, MinIO, and more. Real pricing, escape costs ...
-- [AWS S3 vs Cloudflare R2: Object Storage Comparison ...](https://rcloneview.com/support/blog/aws-s3-vs-cloudflare-r2-object-storage-comparison-rcloneview) — AWS S3 is the industry standard for object storage. Cloudflare R2 eliminates egress fees entirely. RcloneView connects to both — here is how ...
-- [10 Best Object Storage Solutions for Cloud Data in 2025](https://www.digitalocean.com/resources/articles/object-storage-solutions-cloud-data) — Cloudflare R2 eliminates bandwidth costs at $0.015/GB/month for high-traffic applications. What are the top S3-compatible object storage options?
+- [Cloudflare Announces R2 Storage; Rapid and Reliable S3- ...](https://www.cloudflare.com/en-in/press/press-releases/2021/cloudflare-announces-r2-storage/) — Cloudflare announced Cloudflare R2 Storage, a better way for developers to store everything they need with automatic migration of data from ...
+- [AWS S3 and S3-Compatible | RcloneView Support Center](https://rcloneview.com/support/howto/remote-storage-connection-settings/s3) — RcloneView supports Amazon S3 and a wide range of S3-compatible object storage providers, including major vendors such as Wasabi, Backblaze, Cloudflare R2, and
+- [Ask HN: S3/Cloudflare R2/GCS/Wasabi/B2/Bunny or Minio ...](https://news.ycombinator.com/item?id=39895205) — Seems like a few of the non-AWS S3 object storage services (even big ones like R2) have had some production issues.
+- [S3-Compatible Storage bucket to destination](https://fivetran.com/docs/connectors/files/s3-compatible-storage) — We have tested the following services with S3-Compatible Storage connector: Cloudflare R2 · MinIO · Oracle Cloud Infrastructure Object Storage · Stackit Obje
+- [Cloudflare R2 vs AWS S3: Complete 2025 Comparison Guide](https://www.digitalapplied.com/blog/cloudflare-r2-vs-aws-s3-comparison) — Compare Cloudflare R2 vs AWS S3 in 2025. Pricing, performance, features & migration guide to help you choose the right object storage solution.
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
