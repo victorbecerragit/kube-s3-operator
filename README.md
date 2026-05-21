@@ -1,8 +1,8 @@
 # kube-s3-operator
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/victorbecerragit/kube-s3-operator/code)](https://goreportcard.com/report/github.com/victorbecerragit/kube-s3-operator/code)
-[![Go Version](https://img.shields.io/badge/go%20version-1.25.0-blue)](https://golang.org/dl/)
-[![Kubernetes](https://img.shields.io/badge/kubernetes-v0.35.1-blue)](https://kubernetes.io/)
+[![Go Version](https://img.shields.io/badge/go%20version-1.26.0-blue)](https://golang.org/dl/)
+[![Kubernetes](https://img.shields.io/badge/kubernetes-v0.36.0-blue)](https://kubernetes.io/)
 [![AWS SDK](https://img.shields.io/badge/aws--sdk-v2-orange)](https://github.com/aws/aws-sdk-go-v2)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Release](https://img.shields.io/github/release/victorbecerragit/kube-s3-operator.svg)](https://github.com/victorbecerragit/kube-s3-operator/releases)
@@ -24,8 +24,8 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 - 🎯 Native Kubernetes integration with kubectl
 - 🚀 AWS SDK v2 for enhanced security and performance
 - 🔐 Optional AWS credentials — explicit K8s secrets **or** IAM roles / IRSA (no secret required)
-- ✅ Go 1.25.0 with latest Kubernetes v0.35.1 compatibility
-- 📝 Comprehensive testing with Ginkgo v2.28.1 and Gomega v1.39.0
+- ✅ Go 1.26.0 with latest Kubernetes v0.36.0 compatibility
+- 📝 Comprehensive testing with Ginkgo v2.28.3 and Gomega v1.40.0
 
 ## S3 Ecosystem Weekly Trends
 
@@ -45,8 +45,8 @@ Last updated: 2026-05-18 (UTC)
 
 ### Prerequisites
 
-- Kubernetes cluster (v1.28+, tested with v0.35.1)
-- Go 1.25.0 or later
+- Kubernetes cluster (v1.28+, tested with v0.36.0)
+- Go 1.26.0 or later
 - AWS credentials configured
 - kubectl installed
 
@@ -156,19 +156,19 @@ cd code && make test-e2e
 ### Latest Release (v0.2.6)
 - **AWS SDK Refresh**: Rebased on aws-sdk-go-v2 v1.41.5, including the lifecycle filter fix so controller lifecycle rules continue to compile and reconcile with the newest SDK definitions
 - **Chart + App Version**: Published as Helm `0.2.6` to stay aligned with the controller release train and make the SDK upgrade available to Helm consumers
-- **Go & Kubernetes Compatibility**: Maintains Go 1.25.0 and Kubernetes v0.35.1 compatibility while keeping controller-runtime at v0.23.1
+- **Go & Kubernetes Compatibility**: Maintains Go 1.26.0 and Kubernetes v0.36.0 compatibility while keeping controller-runtime at v0.24.1
 - **Tests & Tooling**: All existing Ginkgo/Gomega/KUTTL suites continue running in CI with the updated dependencies
 
 ### Version Compatibility Matrix
 
 | Component | Version | Status |
 |-----------|---------|--------|
-| Go        | 1.25.0  | ✅ Latest |
-| Kubernetes| v0.35.1 | ✅ Latest |
+| Go        | 1.26.0  | ✅ Latest |
+| Kubernetes| v0.36.0 | ✅ Latest |
 | AWS SDK   | v2      | ✅ Current |
-| Controller Runtime | v0.23.1 | ✅ Compatible |
-| Ginkgo    | v2.28.1 | ✅ Latest |
-| Gomega    | v1.39.0 | ✅ Latest |
+| Controller Runtime | v0.24.1 | ✅ Compatible |
+| Ginkgo    | v2.28.3 | ✅ Latest |
+| Gomega    | v1.40.0 | ✅ Latest |
 
 ## 🚀 Automated Release Pipeline
 
