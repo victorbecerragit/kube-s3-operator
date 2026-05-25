@@ -32,13 +32,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-05-21 (UTC)
+Last updated: 2026-05-25 (UTC)
 
-- [Cloudflare Announces R2 Storage; Rapid and Reliable S3- ...](https://www.cloudflare.com/en-in/press/press-releases/2021/cloudflare-announces-r2-storage/) — Cloudflare announced Cloudflare R2 Storage, a better way for developers to store everything they need with automatic migration of data from ...
-- [AWS S3 and S3-Compatible | RcloneView Support Center](https://rcloneview.com/support/howto/remote-storage-connection-settings/s3) — RcloneView supports Amazon S3 and a wide range of S3-compatible object storage providers, including major vendors such as Wasabi, Backblaze, Cloudflare R2, and
+- [Cloudflare Announces R2 Storage; Rapid and Reliable S3- ...](https://cloudflare.net/news/news-details/2021/Cloudflare-Announces-R2-Storage-Rapid-and-Reliable-S3-Compatible-Object-Storage-Designed-for-the-Edge/default.aspx) — Cloudflare R2 Storage will push this commitment even further, adding automatic migration of data from S3-compatible services and providing ...
+- [Super Slurper now supports migrations from all S3- ...](https://developers.cloudflare.com/changelog/post/2025-02-24-r2-super-slurper-s3-compatible-support/) — Super Slurper can now migrate data from any S3-compatible object storage provider to Cloudflare R2. This includes transfers from services ...
+- [Centralize Amazon S3, Wasabi, and Cloudflare R2 with ...](https://rcloneview.com/support/blog/centralize-s3-wasabi-cloudflare-r2-with-rcloneview) — Unify and manage all your S3-compatible cloud storage—Amazon S3, Wasabi, and Cloudflare R2—through one intuitive GUI.
 - [Ask HN: S3/Cloudflare R2/GCS/Wasabi/B2/Bunny or Minio ...](https://news.ycombinator.com/item?id=39895205) — Seems like a few of the non-AWS S3 object storage services (even big ones like R2) have had some production issues.
 - [S3-Compatible Storage bucket to destination](https://fivetran.com/docs/connectors/files/s3-compatible-storage) — We have tested the following services with S3-Compatible Storage connector: Cloudflare R2 · MinIO · Oracle Cloud Infrastructure Object Storage · Stackit Obje
-- [Cloudflare R2 vs AWS S3: Complete 2025 Comparison Guide](https://www.digitalapplied.com/blog/cloudflare-r2-vs-aws-s3-comparison) — Compare Cloudflare R2 vs AWS S3 in 2025. Pricing, performance, features & migration guide to help you choose the right object storage solution.
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
