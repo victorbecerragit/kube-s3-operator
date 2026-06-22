@@ -32,13 +32,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-06-15 (UTC)
+Last updated: 2026-06-22 (UTC)
 
-- [Cloudflare Announces R2 Storage; Rapid and Reliable S3- ...](https://www.cloudflare.com/press/press-releases/2021/cloudflare-announces-r2-storage/) — Cloudflare R2 Storage, a better way for developers to store everything they need with automatic migration of data from S3-compatible services ...
+- [Cloudflare Announces R2 Storage; Rapid and Reliable S3- ...](https://www.cloudflare.com/press/press-releases/2021/cloudflare-announces-r2-storage/) — Cloudflare announced Cloudflare R2 Storage, a better way for developers to store everything they need with automatic migration of data from ...
 - [Best S3-Compatible Object Storage Providers (2026 ...](https://lowcloud.io/en/blog/s3-compatible-object-storage) — Compare the best S3-compatible object storage solutions in 2026: MinIO, Cloudflare R2, Hetzner, Backblaze B2, Wasabi, Garage, Ceph and more ...
+- [Super Slurper now supports migrations from all S3- ...](https://developers.cloudflare.com/changelog/post/2025-02-24-r2-super-slurper-s3-compatible-support/) — Super Slurper can now migrate data from any S3-compatible object storage provider to Cloudflare R2. This includes transfers from services ...
+- [Supporting Cloudflare's R2 S3 compatible storage #4480](https://github.com/outline/outline/discussions/4480) — R2 now supports public access which means you can talk to it via the open internet without needing to go through a cloudflare worker.
 - [Ask HN: S3/Cloudflare R2/GCS/Wasabi/B2/Bunny or Minio ...](https://news.ycombinator.com/item?id=39895205) — Seems like a few of the non-AWS S3 object storage services (even big ones like R2) have had some production issues.
-- [The latest new age S3 storage from Cloudflare](https://community.wappler.io/t/the-latest-new-age-s3-storage-from-cloudflare/36534) — CloudFlare announced R2 storage where they totally eliminate the bandwidth fees and only charge $0.015 per GB of data stored per month. They ...
-- [S3-Compatible Storage bucket to destination](https://fivetran.com/docs/connectors/files/s3-compatible-storage) — We have tested the following services with S3-Compatible Storage connector: Cloudflare R2 MinIO Oracle Cloud
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
