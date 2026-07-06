@@ -32,13 +32,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-06-29 (UTC)
+Last updated: 2026-07-06 (UTC)
 
 - [Super Slurper now supports migrations from all S3- ...](https://developers.cloudflare.com/changelog/post/2025-02-24-r2-super-slurper-s3-compatible-support/) — Super Slurper can now migrate data from any S3-compatible object storage provider to Cloudflare R2. This includes transfers from services ...
-- [Best S3-Compatible Object Storage Providers (2026 ...](https://lowcloud.io/en/blog/s3-compatible-object-storage) — Compare the best S3-compatible object storage solutions in 2026: MinIO, Cloudflare R2, Hetzner, Backblaze B2, Wasabi, Garage, Ceph and more ...
-- [Cloudflare image, R2 and minio - General](https://community.cloudflare.com/t/cloudflare-image-r2-and-minio/394468) — As far as I can see Cloudflare images does not provide an S3 compatible API. So I'm wondering how would I deal with local development when ...
-- [Cloudflare R2 vs AWS S3: Complete 2025 Comparison Guide](https://www.digitalapplied.com/blog/cloudflare-r2-vs-aws-s3-comparison) — Compare Cloudflare R2 vs AWS S3 in 2025. Pricing, performance, features & migration guide to help you choose the right object storage solution.
-- [Ask HN: S3/Cloudflare R2/GCS/Wasabi/B2/Bunny or Minio ...](https://news.ycombinator.com/item?id=39895205) — Seems like a few of the non-AWS S3 object storage services (even big ones like R2) have had some production issues.
+- [Best S3-Compatible Object Storage Providers (2026 ...](https://lowcloud.io/en/blog/s3-compatible-object-storage) — Compare the best S3-compatible object storage solutions in 2026: MinIO, Cloudflare R2, Impossible Cloud, Hetzner, Backblaze B2, Wasabi ...
+- [Cloudflare image, R2 and minio - General](https://community.cloudflare.com/t/cloudflare-image-r2-and-minio/394468) — Cloudflare images does not provide an S3 compatible API. S3 isn't relevant since it isn't an object store. R2 is just blob storage serving your ...
+- [Cloudflare R2 vs AWS S3: Complete 2025 Comparison ...](https://www.digitalapplied.com/blog/cloudflare-r2-vs-aws-s3-comparison) — Compare Cloudflare R2 vs AWS S3 in 2025. Pricing, performance, features & migration guide to help you choose the right object storage solution.
+- [Supporting Cloudflare's R2 S3 compatible storage #4480](https://github.com/outline/outline/discussions/4480) — R2 now supports public access which means you can talk to it via the open internet without needing to go through a cloudflare worker.
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
