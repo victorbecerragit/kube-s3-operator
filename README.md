@@ -32,13 +32,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-07-06 (UTC)
+Last updated: 2026-07-13 (UTC)
 
-- [Super Slurper now supports migrations from all S3- ...](https://developers.cloudflare.com/changelog/post/2025-02-24-r2-super-slurper-s3-compatible-support/) — Super Slurper can now migrate data from any S3-compatible object storage provider to Cloudflare R2. This includes transfers from services ...
 - [Best S3-Compatible Object Storage Providers (2026 ...](https://lowcloud.io/en/blog/s3-compatible-object-storage) — Compare the best S3-compatible object storage solutions in 2026: MinIO, Cloudflare R2, Impossible Cloud, Hetzner, Backblaze B2, Wasabi ...
-- [Cloudflare image, R2 and minio - General](https://community.cloudflare.com/t/cloudflare-image-r2-and-minio/394468) — Cloudflare images does not provide an S3 compatible API. S3 isn't relevant since it isn't an object store. R2 is just blob storage serving your ...
-- [Cloudflare R2 vs AWS S3: Complete 2025 Comparison ...](https://www.digitalapplied.com/blog/cloudflare-r2-vs-aws-s3-comparison) — Compare Cloudflare R2 vs AWS S3 in 2025. Pricing, performance, features & migration guide to help you choose the right object storage solution.
-- [Supporting Cloudflare's R2 S3 compatible storage #4480](https://github.com/outline/outline/discussions/4480) — R2 now supports public access which means you can talk to it via the open internet without needing to go through a cloudflare worker.
+- [Best Object Storage Providers in 2026: Vendors, Options, ...](https://filebase.com/blog/best-object-storage-providers-in-2026-vendors-options-and-pricing/) — Common examples of object storage include Amazon S3, Filebase, Cloudflare R2, Backblaze B2, Wasabi, DigitalOcean Spaces, MinIO, and Cloudian.
+- [Top 10 Best Object Storage Software | 2026 Edition](https://gitnux.org/best/object-storage-software/) — MinIO is an S3-compatible object store that supports fine-grained policies, automated lifecycle controls, and Kubernetes-friendly deployment ...
+- [5 MinIO Alternatives for S3-Compatible Storage in 2026](https://sliplane.io/blog/minio-alternatives-for-s3-compatible-storage) — Compare five MinIO alternatives for S3-compatible storage in 2026: Sliplane, Garage, SeaweedFS, Ceph, and Cloudflare R2.
+- [R2 - Super Slurper now supports migrations from all S3- ...](https://community.cloudflare.com/t/r2-super-slurper-now-supports-migrations-from-all-s3-compatible-storage-providers/897270) — Super Slurper can now migrate data from any S3-compatible object storage provider to Cloudflare R2. This includes transfers from services ...
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
