@@ -32,13 +32,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-07-20 (UTC)
+Last updated: 2026-07-27 (UTC)
 
-- [Cloudflare Announces R2 Storage; Rapid and Reliable S3- ...](https://cloudflare.net/news/news-details/2021/Cloudflare-Announces-R2-Storage-Rapid-and-Reliable-S3-Compatible-Object-Storage-Designed-for-the-Edge/default.aspx) — Cloudflare R2 Storage, a better way for developers to store everything they need with automatic migration of data from S3-compatible services ...
+- [Best S3-Compatible Object Storage Providers (2026 ...](https://lowcloud.io/en/blog/s3-compatible-object-storage) — Compare the best S3-compatible object storage solutions in 2026: MinIO, Cloudflare R2, Impossible Cloud, Hetzner, Backblaze B2, Wasabi ...
 - [Super Slurper now supports migrations from all S3- ...](https://developers.cloudflare.com/changelog/post/2025-02-24-r2-super-slurper-s3-compatible-support/) — Super Slurper can now migrate data from any S3-compatible object storage provider to Cloudflare R2. This includes transfers from services ...
+- [Supporting Cloudflare's R2 S3 compatible storage #4480](https://github.com/outline/outline/discussions/4480) — R2 now supports public access which means you can talk to it via the open internet without needing to go through a cloudflare worker.
+- [Cloudflare R2 vs AWS S3: Complete 2025 Comparison ...](https://www.digitalapplied.com/blog/cloudflare-r2-vs-aws-s3-comparison) — Compare Cloudflare R2 vs AWS S3 in 2025. Pricing, performance, features & migration guide to help you choose the right object storage solution.
 - [Ask HN: S3/Cloudflare R2/GCS/Wasabi/B2/Bunny or Minio ...](https://news.ycombinator.com/item?id=39895205) — Seems like a few of the non-AWS S3 object storage services (even big ones like R2) have had some production issues.
-- [Rapid and Reliable Object Storage, Minus the Egress Fees](https://www.reddit.com/r/webdev/comments/pxbira/cloudflare_announcement_r2_storage_rapid_and/) — Cloudflare is $15 per TB, Wasabi is only $6 per TB, no egress fees. Wasabi supports the S3 protocol as well.
-- [Cloudflare R2 Alternatives: European S3-Compatible ...](https://danubedata.ro/blog/cloudflare-r2-alternatives-europe-2026) — This guide breaks down the seven credible R2 alternatives that keep the S3 API and GDPR-safe residency in 2026 — starting with DanubeData ...
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
