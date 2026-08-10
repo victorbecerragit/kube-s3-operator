@@ -32,13 +32,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-08-03 (UTC)
+Last updated: 2026-08-10 (UTC)
 
+- [Amazon S3, Azure Blob & S3-Compatible Storage](https://ftpie.com/ftpie-object-storage-s3-azure-gcs) — FTPie 2026.7.3 adds enterprise object storage: connect Amazon S3, Azure Blob Storage, Google Cloud Storage and any S3-compatible provider ...
 - [Best S3-Compatible Object Storage Providers (2026 ...](https://lowcloud.io/en/blog/s3-compatible-object-storage) — Compare the best S3-compatible object storage solutions in 2026: MinIO, Cloudflare R2, Impossible Cloud, Hetzner, Backblaze B2, Wasabi ...
 - [Cloudflare Announces R2 Storage; Rapid and Reliable S3- ...](https://cloudflare.net/news/news-details/2021/Cloudflare-Announces-R2-Storage-Rapid-and-Reliable-S3-Compatible-Object-Storage-Designed-for-the-Edge/default.aspx) — Cloudflare R2 Storage, a better way for developers to store everything they need with automatic migration of data from S3-compatible services ...
+- [Supporting Cloudflare's R2 S3 compatible storage #4480](https://github.com/outline/outline/discussions/4480) — R2 now supports public access which means you can talk to it via the open internet without needing to go through a cloudflare worker. Given the controversy ...
 - [Cloudflare R2 vs AWS S3: Complete 2025 Comparison ...](https://www.digitalapplied.com/blog/cloudflare-r2-vs-aws-s3-comparison) — Compare Cloudflare R2 vs AWS S3 in 2025. Pricing, performance, features & migration guide to help you choose the right object storage solution.
-- [Supporting Cloudflare's R2 S3 compatible storage #4480](https://github.com/outline/outline/discussions/4480) — R2 now supports public access which means you can talk to it via the open internet without needing to go through a cloudflare worker.
-- [Super Slurper now supports migrations from all S3- ...](https://developers.cloudflare.com/changelog/post/2025-02-24-r2-super-slurper-s3-compatible-support/) — Super Slurper can now migrate data from any S3-compatible object storage provider to Cloudflare R2. This includes transfers from services ...
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
