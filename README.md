@@ -32,13 +32,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-09-14 (UTC)
+Last updated: 2026-09-21 (UTC)
 
 - [Best S3-Compatible Object Storage Providers (2026 ...](https://lowcloud.io/en/blog/s3-compatible-object-storage) — Compare the best S3-compatible object storage solutions in 2026: MinIO, Cloudflare R2, Impossible Cloud, Hetzner, Backblaze B2, Wasabi ...
-- [Cloudflare R2, Backblaze B2, Wasabi, and MinIO](https://www.runxbuild.com/blog/multi-cloud-s3-compatible-storage-solutions) — Wasabi - S3-compatible, flat $7/TB/month ($0.007/GB) for hot storage, no egress fees. The team that has predictable storage needs and wants no ...
-- [Cloudflare R2 Alternatives: European S3-Compatible ...](https://danubedata.ro/blog/cloudflare-r2-alternatives-europe-2026) — This guide breaks down the seven credible R2 alternatives that keep the S3 API and GDPR-safe residency in 2026 — starting with DanubeData Object ...
+- [Cloudflare Announces R2 Storage; Rapid and Reliable S3- ...](https://cloudflare.net/news/news-details/2021/Cloudflare-Announces-R2-Storage-Rapid-and-Reliable-S3-Compatible-Object-Storage-Designed-for-the-Edge/default.aspx) — Cloudflare R2 Storage will push this commitment even further, adding automatic migration of data from S3-compatible services and providing ...
 - [Best S3-Compatible Storage Providers: Top 5 Options in ...](https://cloudian.com/guides/s3-storage/best-s3-compatible-storage-providers-top-5-options-in-2026/) — Notable S3-Compatible Storage Providers · 1. Cloudian HyperStore · 2. Wasabi Hot Cloud Storage · 3. Backblaze B2 Cloud Storage · 4. MinIO · 5. Ceph.
 - [S3-Compatible Storage bucket to destination](https://fivetran.com/docs/connectors/files/s3-compatible-storage) — We have tested the following services with S3-Compatible Storage connector: Cloudflare R2 · MinIO · Oracle Cloud Infrastructure Object Storage · Stackit Obje
+- [mixpeek/awesome-object-storage: A curated, opinionated ...](https://github.com/mixpeek/awesome-object-storage) — A curated, opinionated guide to S3-compatible object storage — 21 providers, pricing, features, gotchas, and an interactive comparison tool.
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
