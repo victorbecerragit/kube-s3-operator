@@ -32,12 +32,12 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-09-28 (UTC)
+Last updated: 2026-10-05 (UTC)
 
 - [COMPATIBLE Definition & Meaning](https://www.merriam-webster.com/dictionary/compatible) — The meaning of COMPATIBLE is capable of existing together in harmony. How to use compatible in a sentence.
 - [What does being compatible in a relationship mean?](https://www.reddit.com/r/emotionalintelligence/comments/1ltsozb/what_does_being_compatible_in_a_relationship_mean/) — I hear everyone always speak about You have to be compatible but what exactly does that mean? Because surely it has nothing to do with things in common ...
-- [Uptake and synthesis of compatible solutes as microbial ...](https://pubmed.ncbi.nlm.nih.gov/9818351/) — Here we summarise the molecular mechanisms of compatible solute accumulation in Escherichia coli and Bacillus subtilis, model organisms for the gram-negative
-- [Compatible Licenses](https://creativecommons.org/compatible-licenses/) — This is the list of licenses that have been approved by Creative Commons as compatible with the two Creative Commons ShareAlike licenses, latest CC news, ...
+- [Uptake and synthesis of compatible solutes as microbial ...](https://pubmed.ncbi.nlm.nih.gov/9818351/) — Generally, compatible solutes can be amassed by microorganisms through uptake and synthesis. Here we summarise the molecular mechanisms of compatible solute ...
+- [COMPATIBLE](https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/COMPATIBLE.html) — COMPATIBLE enables you to use a new release of Oracle while ensuring the ability to downgrade the database to an earlier release.
 - [Analog Lab v. 5.12 Not Compatible With Logic Pro?](https://forum.arturia.com/t/analog-lab-v-5-12-not-compatible-with-logic-pro/8201) — I am mid-project and have lost several instruments I was using for a client as after updating to version 5.12 of Analog Lab Pro, I got an error message within .
 <!-- S3_TRENDS_END -->
 
