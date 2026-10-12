@@ -32,13 +32,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-10-05 (UTC)
+Last updated: 2026-10-12 (UTC)
 
-- [COMPATIBLE Definition & Meaning](https://www.merriam-webster.com/dictionary/compatible) — The meaning of COMPATIBLE is capable of existing together in harmony. How to use compatible in a sentence.
-- [What does being compatible in a relationship mean?](https://www.reddit.com/r/emotionalintelligence/comments/1ltsozb/what_does_being_compatible_in_a_relationship_mean/) — I hear everyone always speak about You have to be compatible but what exactly does that mean? Because surely it has nothing to do with things in common ...
-- [Uptake and synthesis of compatible solutes as microbial ...](https://pubmed.ncbi.nlm.nih.gov/9818351/) — Generally, compatible solutes can be amassed by microorganisms through uptake and synthesis. Here we summarise the molecular mechanisms of compatible solute ...
-- [COMPATIBLE](https://docs.oracle.com/en/database/oracle/oracle-database/19/refrn/COMPATIBLE.html) — COMPATIBLE enables you to use a new release of Oracle while ensuring the ability to downgrade the database to an earlier release.
-- [Analog Lab v. 5.12 Not Compatible With Logic Pro?](https://forum.arturia.com/t/analog-lab-v-5-12-not-compatible-with-logic-pro/8201) — I am mid-project and have lost several instruments I was using for a client as after updating to version 5.12 of Analog Lab Pro, I got an error message within .
+- [Which S3-compatible storage do you prefer now that MinIO ...](https://world.optimizely.com/forum/developer-forum/Developer-to-developer/Thread-Container/2025/11/which-s3-compatible-storage-do-you-prefer-now-that-minio-has-gone-lock-in/) — We've been evaluating Garage, Cloudserver, SeaweedFS, Apache Ozone, S3Proxy, and others. Curious — what's your go-to MinIO alternative for on- ...
+- [MinIO S3 Compatible Official Documentation](https://www.facebook.com/fb-answers/minio-s3-compatible-official-documentation/) — MinIO is a self-hosted, S3-compatible object storage solution you can run on Kubernetes, bare metal, or VMs. For official docs, go to MinIO's site, but...
+- [Storage and Data Protection News for the Week of ...](https://solutionsreview.com/backup-disaster-recovery/storage-and-data-protection-news-for-the-week-of-february-6-updates-from-commvault-hycu-minio-more/) — Solutions Review Executive Editor Tim King curated this list of notable storage and data protection news for the week of February 6, 2025.
+- [Re: Discussion: minio replacement for S3 compatible storage](https://lists.apache.org/thread/qnnk6lyzjj9122f2g214g9wjxn8wm4wz) — Today we run credential-vending tests against MinIO with kmsUnavailable=true because MinIO's STS policy evaluator doesn't handle KMS ARNs the ...
+- [Cloudflare announces Amazon S3 compatible object ...](https://gigazine.net/gsc_news/en/20210929-cloudflare-r2-storage/) — Cloudflare announces Amazon S3 compatible object storage 'R2 Storage' with free data reading and data loss 'once every 100,000 years'. This ...
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
