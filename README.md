@@ -32,13 +32,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-10-19 (UTC)
+Last updated: 2026-10-26 (UTC)
 
+- [Introducing S3-Compatible Storage Support for Iceberg ...](https://www.snowflake.com/en/blog/engineering/s3-compatible-storage-iceberg-horizon-catalog/) — S3-compatible storage support is in private preview. If you have Iceberg data on MinIO, Ceph, Cloudflare R2, or a cluster in your own data ...
 - [Best S3-Compatible Object Storage Providers (2026 ...](https://lowcloud.io/en/blog/s3-compatible-object-storage) — Compare the best S3-compatible object storage solutions in 2026: MinIO, Cloudflare R2, Impossible Cloud, Hetzner, Backblaze B2, Wasabi ...
-- [Self-Hosted InsForge Now Supports S3 Storage](https://insforge.dev/blog/self-hosted-storage-minio-rustfs-s3) — Self-hosted InsForge now supports S3-backed storage through bundled MinIO or RustFS and any external S3-compatible object store.
 - [S3-compatible object storage services](https://docs.sftpgo.com/enterprise/s3-compatible-services/) — SFTP, FTP, and WebDAV gateway for any S3-compatible object storage. SFTPGo config for Cloudflare R2, Backblaze B2, AIStor, MinIO, Ceph, Wasabi
-- [Cloudflare R2 Alternatives: European S3-Compatible ...](https://danubedata.ro/blog/cloudflare-r2-alternatives-europe-2026) — This guide breaks down the seven credible R2 alternatives that keep the S3 API and GDPR-safe residency in 2026 — starting with DanubeData ...
-- [Self-Hosted S3 Storage in 2026: RustFS, SeaweedFS, Garage ...](https://rilavek.com/resources/self-hosted-s3-compatible-object-storage-2026) — Compare the top free-tier S3-compatible object storage providers for 2026. Cloudflare R2, Backblaze B2, Wasabi, Scaleway, IDrive e2 ...
+- [Seo utils upgrades to s3-compatible storage for caching](https://www.facebook.com/groups/seoutils/posts/1307763264520610/) — In the upcoming version, I will replace Google Drive with S3-compatible storage (AWS S3, Cloudflare R2, DigitalOcean Spaces, MinIO) for caching DataForSEO ...
+- [Best S3-Compatible Storage Providers: Top 5 Options in ...](https://cloudian.com/guides/s3-storage/best-s3-compatible-storage-providers-top-5-options-in-2026/) — Notable S3-Compatible Storage Providers · 1. Cloudian HyperStore · 2. Wasabi Hot Cloud Storage · 3. Backblaze B2 Cloud Storage · 4. MinIO · 5. Ceph.
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
