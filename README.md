@@ -32,13 +32,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-10-26 (UTC)
+Last updated: 2026-11-02 (UTC)
 
-- [Introducing S3-Compatible Storage Support for Iceberg ...](https://www.snowflake.com/en/blog/engineering/s3-compatible-storage-iceberg-horizon-catalog/) — S3-compatible storage support is in private preview. If you have Iceberg data on MinIO, Ceph, Cloudflare R2, or a cluster in your own data ...
-- [Best S3-Compatible Object Storage Providers (2026 ...](https://lowcloud.io/en/blog/s3-compatible-object-storage) — Compare the best S3-compatible object storage solutions in 2026: MinIO, Cloudflare R2, Impossible Cloud, Hetzner, Backblaze B2, Wasabi ...
-- [S3-compatible object storage services](https://docs.sftpgo.com/enterprise/s3-compatible-services/) — SFTP, FTP, and WebDAV gateway for any S3-compatible object storage. SFTPGo config for Cloudflare R2, Backblaze B2, AIStor, MinIO, Ceph, Wasabi
-- [Seo utils upgrades to s3-compatible storage for caching](https://www.facebook.com/groups/seoutils/posts/1307763264520610/) — In the upcoming version, I will replace Google Drive with S3-compatible storage (AWS S3, Cloudflare R2, DigitalOcean Spaces, MinIO) for caching DataForSEO ...
-- [Best S3-Compatible Storage Providers: Top 5 Options in ...](https://cloudian.com/guides/s3-storage/best-s3-compatible-storage-providers-top-5-options-in-2026/) — Notable S3-Compatible Storage Providers · 1. Cloudian HyperStore · 2. Wasabi Hot Cloud Storage · 3. Backblaze B2 Cloud Storage · 4. MinIO · 5. Ceph.
+- [Add support for Cloudflare R2 (alternative to Amazon S3) ...](https://github.com/pocketbase/pocketbase/issues/4274) — You can use any S3 compatible storage (not just AWS). Cloudflare R2 has a free plan if you want to do tests on it. I think they require billing ...
+- [Minio: Amazon S3 compatible object storage under your control](https://mhausenblas.medium.com/minio-amazon-s3-compatible-object-storage-under-your-control-4d975ec4d5f1) — Minio is an Amazon S3 compatible object storage offering you can run wherever you like. It comes with the familiar abstraction of buckets and ...
+- [Configure an S3 compatible object storage provider for ...](https://meta.discourse.org/t/configure-an-s3-compatible-object-storage-provider-for-uploads/148916?page=8) — This topic covers how to configure some common S3 compatible Object Storage providers (S3 clones). on R2 about end of November apparently.
+- [S3 Compatible Storage: The Real Decision - Storafleet](https://www.google.com/goto?url=CAESkAEB6zswFQMmudrqdNZGp5AaSrbP7mFp40bEkcVnUSZZKR4Ju6X8ZJAPb9mUhcsTTsZ-huI617uADOIInTIaYIfoNbeDYE4Ik3hDuZArWA4YBsgdybj3m0MeONXOKCrGwK2HErOyTqpeTie1JdjlmrBPgaw5l38cZCqWqqcKcAjlPUGCblTNhra7gTO3kFC7fwI) — Cloudflare R2, a new S3 feature ships everywhere on day one. Cloudflare R2, Wasabi, IDrive e2. R2's model is to not charge for egress at all. Wasabi's model is
+- [Self-hosting concern: MinIO dependency after repository ...](https://www.google.com/goto?url=CAESaQHrOzAVW_1hXNUTbQ6NchzBSOl-IkxTrA8F5xud3oQi6rHw-LwaQFZDU4CSxx85BXatfn-LGJ5IbwAZtNM_0WkpY5PMjqAPUV4E6sX-FGM8oFK0yz4jE5Tn6tLrNIHYh9zDiA40hkiIXQ) — Users can point to AWS S3, Cloudflare R2, Backblaze B2, Wasabi, or any other S3-compatible provider by setting the endpoint and credentials ...
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
