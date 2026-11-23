@@ -32,13 +32,13 @@ A Kubernetes operator for managing AWS S3 buckets using native Kubernetes resour
 This section is updated weekly from CI to highlight recent S3-compatible storage news and competitor tooling.
 
 <!-- S3_TRENDS_START -->
-Last updated: 2026-11-16 (UTC)
+Last updated: 2026-11-23 (UTC)
 
-- [Introducing S3-Compatible Storage Support for Iceberg ...](https://www.snowflake.com/en/blog/engineering/s3-compatible-storage-iceberg-horizon-catalog/) — Ceph, Wasabi, S3-compatible storage support is in private preview. If you have Iceberg data on MinIO, Ceph, Cloudflare R2, or a cluster. See ...
-- [S3 Compatible Storage: The Real Decision - Storafleet](https://storafleet.com/blog/s3-compatible-storage-providers-a-guide-to-object-storage) — S3 compatibility is the easy part. The real decision is the control plane above your buckets, and what happens once you run three providers at once.
+- [What Are the Best S3-Compatible Object Storage Alternatives?](https://www.tigrisdata.com/docs/ai-agents/s3-compatible-alternatives/) — Compare the best S3-compatible object storage alternatives: Tigris, Cloudflare R2, Backblaze B2, Wasabi, MinIO, and AWS S3.
 - [Best S3-Compatible Object Storage Providers (2026 ...](https://lowcloud.io/en/blog/s3-compatible-object-storage) — Compare the best S3-compatible object storage solutions in 2026: MinIO, Cloudflare R2, Impossible Cloud, Hetzner, Backblaze B2, Wasabi ...
-- [S3-Compatible Storage Providers: The Complete List (90+ ...](https://blober.io/kb/articles/s3-compatible-storage-providers-complete-list/) — Blober has the most common S3 services built in as their own providers (Amazon S3, Wasabi, Cloudflare R2, Backblaze B2, DigitalOcean Spaces, and ...
-- [R2 Changelog](https://developers.cloudflare.com/changelog/product/r2/2/) — Super Slurper can now migrate data from any S3-compatible object storage provider to Cloudflare R2. This includes transfers from services like MinIO, Wasabi, ..
+- [Cloudflare Announces R2 Storage; Rapid and Reliable S3- ...](https://www.google.com/goto?url=CAES3gEBxCJF10peKB23J7fJEB0t7IS_c4p7hrY6DMLUYxi-2Bp5Zum9MS-s-uEUkgS-lMhtFuhJDETXrZkB4ZA6yPQgtnqdx4KYc8nwxYUpYAhLC3CAv26bBzMUrtdlCI_e4a5wbdMsvgIspM7_4mNIPyotKFHRt0Ex8DbagMBoIAhDo2FMo0B6ZHAjf4YlPuEXGkD_tlHGMa8h2DWxZUPN9CYpLManVn7OBtO_ny61WbhJLcBmFzXf5VuChX8R_SuhE-_tKfIN6s-Duupa0cys3raUk0I71sXvnrzecMPHm9w) — Cloudflare R2 Storage will push this commitment even further, adding automatic migration of data from S3-compatible services and providing ...
+- [Stateless Media with S3 Uploads and MinIO](https://www.google.com/goto?url=CAESewHEIkXX3QO1X8wx5pO3iLya3GYsPvn2z6gVo-hbnwjFAs8_LBtZfwE2oUvslyXezqwTaBl2442H6tFk1JSW_lHcaYOKhHuri5cD8Upo92_Hg256sxlUrKsxYpA6y6yOOol1L0br7v38NEbDnd8CVYtLRnuHgqA9D_dsqA) — Sets up MinIO as an S3-compatible backend for WordPress media: create secrets and StatefulSets so uploads are stored centrally outside pods.
+- [Configure an S3 compatible object storage provider for ...](https://www.google.com/goto?url=CAESpQEBxCJF19mMT36Ebibwr1mzxwQlw8yGJVU-uxn_glOgEDuEWAUGKalDRL7Dg-E08rJHZyn8XNXK00B_CchmUhO5Q9bc5yaHqc2sG2jZkRwODwppg_IBlwlwqyMtRtyamjZqoxGNC8UeegziiSa52b1ZEz-Cme6UVTENFkPFH06Pp-eRwiogSWWo-8keoad_yAmJF9OWGl2bQHeoLEq7NOU_kWGnyRg) — To configure Cloudflare R2, you will need to configure the relevant settings in the Cloudflare dashboard under R2 Object Storage. Depending ...
 <!-- S3_TRENDS_END -->
 
 ## Quick Start
